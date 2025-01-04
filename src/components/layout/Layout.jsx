@@ -1,13 +1,15 @@
 import { Outlet } from 'react-router-dom';
 // import Navbar from './Navbar';
+import { ToastContainer } from 'react-toastify';
 
 export default function Layout() {
   return (
-    <div>
+    <>
       {/* <Navbar /> */}
-      <main className="container mx-auto px-4">
+      <ToastContainer/>
+      <main>
         <Outlet />
       </main>
-    </div>
+    </>
   );
 }
