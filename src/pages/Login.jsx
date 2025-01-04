@@ -17,9 +17,9 @@ const AnimatedBackground = () => {
 };
 
 const FloatingElement = ({ index }) => {
-  const size = 40 + Math.random() * 120;
-  const top = Math.random() * 100;
-  const left = Math.random() * 100;
+  const size = 40 + Math.random() * 100; // Random size between 40 and 160
+  const top = Math.random() * 100;  // Random vertical position (up to 100% of height)
+  const left = Math.random() * 82;  // Random left position within 50% of the panel width
   const baseDelay = -index * 1.5;
 
   return (
@@ -30,8 +30,8 @@ const FloatingElement = ({ index }) => {
       style={{
         width: `${size}px`,
         height: `${size}px`,
-        top: `${top}%`,
-        left: `${left}%`,
+        top: `${top}%`,  // Random vertical positioning
+        left: `${left}%`,  // Random horizontal positioning, restricted to 50% of the panel width
         animationDelay: `${baseDelay}s`,
         animationDuration: '25s',
       }}
@@ -44,6 +44,7 @@ const FloatingElement = ({ index }) => {
     </div>
   );
 };
+
 
 const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
