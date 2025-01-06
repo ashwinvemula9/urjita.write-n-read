@@ -180,7 +180,7 @@ const RightDraw = () => {
             ${step === stepNum 
               ? 'bg-blue-600 text-white ring-4 ring-blue-100' 
               : step > stepNum 
-                ? 'bg-emerald-500 text-white' 
+                ? 'bg-accent-500 text-white' 
                 : 'bg-white border-2 border-gray-200 text-gray-400'}
             transition-all duration-200 relative z-10
           `}>
@@ -197,7 +197,7 @@ const RightDraw = () => {
               <div className={`
                 absolute top-1/2 -translate-y-1/2 left-0 right-0 h-1
                 ${step > stepNum 
-                  ? 'bg-emerald-500' 
+                  ? 'bg-accent-500' 
                   : 'bg-gray-200'}
                 transition-colors duration-300
               `} />
@@ -372,9 +372,9 @@ const RightDraw = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50 to-neutral-50 py-12 px-4">
-      <Card className="max-w-4xl mx-auto">
-        <div className="p-8">
+    <div className="min-h-screen bg-neutral-900 py-12 px-4">
+      <Card className="max-w-4xl mx-auto  bg-white/95 backdrop-blur-md shadow-xl">
+        <div className="p-8 ">
           {renderStepIndicator()}
           {renderStepContent()}
           
@@ -383,6 +383,7 @@ const RightDraw = () => {
               {step > 1 && (
                 <Button 
                   variant="secondary"
+                  className="text-neutral-100 bg-primary-600 hover:bg-primary-700 transition-colors"
                   onClick={() => setStep(prev => prev - 1)}
                 >
                   Previous
@@ -394,6 +395,7 @@ const RightDraw = () => {
               {step === 4 && (
                 <Button
                   variant="secondary"
+                  className="text-neutral-100 bg-secondary-600 hover:bg-secondary-700 transition-colors"
                   onClick={() => {
                     // Export logic here
                   }}
@@ -404,6 +406,7 @@ const RightDraw = () => {
               )}
               <Button 
                 variant="primary"
+                className="bg-accent-500 hover:bg-accent-600 text-white transition-colors"
                 disabled={!isStepValid}
                 onClick={() => step < 4 ? setStep(prev => prev + 1) : console.log('Submit', formData)}
               >
