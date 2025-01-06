@@ -32,7 +32,7 @@ const ForgotPasswordPage = () => {
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-primary-50 to-secondary-50 relative overflow-hidden">
+    <div className="min-h-screen w-full flex items-center justify-center bg-neutral-900 relative overflow-hidden">
       {/* Animated background elements */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute -top-4 -left-4 w-24 h-24 bg-primary-200 rounded-full blur-xl opacity-60 animate-float" />

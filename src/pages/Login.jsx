@@ -61,10 +61,9 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen w-full flex bg-black">
-      <div className="hidden lg:flex w-1/2 bg-black p-12 relative overflow-hidden">
+    <div className="min-h-screen w-full flex bg-neutral-900">
+      <div className="hidden lg:flex w-1/2 p-12 relative overflow-hidden">
         <AnimatedBackground />
-
         <div className="absolute inset-0 z-0">
           <div className="absolute w-[600px] h-[600px] bg-gradient-to-r from-pink-500/30 to-transparent rounded-full blur-3xl opacity-30 top-[-200px] left-[-150px]"></div>
           <div className="absolute w-[500px] h-[500px] bg-gradient-to-br from-blue-400/20 to-transparent rounded-full blur-3xl opacity-30 bottom-[-100px] right-[-100px]"></div>
@@ -106,7 +105,7 @@ const LoginPage = () => {
         </div>
       </div>
 
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 lg:p-12">
+      <div className="w-full lg:w-1/2 bg-white flex items-center justify-center p-8 lg:p-12">
         <div className="w-full max-w-md bg-white rounded-3xl shadow-xl p-8 space-y-8">
           <div className="text-center lg:text-left">
             <h2 className="text-3xl font-bold bg-gradient-to-r from-indigo-950 to-indigo-800 bg-clip-text text-transparent">
