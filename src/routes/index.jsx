@@ -4,6 +4,8 @@ import Layout from '../components/layout/Layout';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import ProtectedRoute from '../components/auth/ProtectedRoute';
 import ForgotPasswordPage from '../pages/ForgotPasswordPage';
+import RightDraw from '../pages/RightDraw';
+import { Sample } from '../pages/Sample';
 
 // Lazy load pages
 const Home = lazy(() => import('../pages/Home'));
@@ -21,6 +23,26 @@ export const router = createBrowserRouter([
         element: (
           <Suspense fallback={<LoadingSpinner />}>
             <Home />
+          </Suspense>
+        ),
+      },
+      {
+        path: 'right-draw',
+        element: (
+          <Suspense fallback={<LoadingSpinner />}>
+            <ProtectedRoute>
+              <RightDraw />
+            </ProtectedRoute>
+          </Suspense>
+        ),
+      },
+      {
+        path: 'sample',
+        element: (
+          <Suspense fallback={<LoadingSpinner />}>
+            <ProtectedRoute>
+              <Sample />
+            </ProtectedRoute>
           </Suspense>
         ),
       },

@@ -108,9 +108,10 @@ const LoginPage = () => {
       <div className="w-full lg:w-1/2 bg-white flex items-center justify-center p-8 lg:p-12">
         <div className="w-full max-w-md bg-white rounded-3xl shadow-xl p-8 space-y-8">
           <div className="text-center lg:text-left">
-            <h2 className="text-3xl font-bold bg-gradient-to-r from-indigo-950 to-indigo-800 bg-clip-text text-transparent">
-              Sign in
-            </h2>
+          <h2 className="text-3xl font-bold bg-gradient-to-r from-indigo-950 to-indigo-800 bg-clip-text text-transparent leading-relaxed">
+  Sign in
+</h2>
+
           </div>
 
           <form className="space-y-6" onSubmit={signInHandler}>
