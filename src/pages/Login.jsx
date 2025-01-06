@@ -55,7 +55,7 @@ const LoginPage = () => {
   
   const signInHandler = (e) => {
     e.preventDefault();
-    login({ user: "Designer", userType: "designer", token: "siiyqqoioiw" });
+    login({ user: "Reviewer", userType: "reviewer", token: "siiyqqoioiw" });
     toast.success("Welcome back!", { autoClose: 1500 });
     navigate('/');
   };

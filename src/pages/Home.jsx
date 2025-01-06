@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useEffect } from 'react';
-import { ArrowRight, FileText, Settings, Box, LayoutDashboard } from 'lucide-react';
+import { ArrowRight, FileText, Settings} from 'lucide-react';
 
 const FeatureCard = ({ title, description, icon: Icon, onClick }) => (
   <div 

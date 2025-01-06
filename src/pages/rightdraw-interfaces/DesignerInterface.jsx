@@ -6,11 +6,11 @@ import {
   Button,
   Card,
   Checkbox,
-} from '../components/common/ReusableComponents';
+} from '../../components/common/ReusableComponents';
 
 
 
-const RightDraw = () => {
+const DesignerInterface = () => {
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     basicInfo: {
@@ -425,4 +425,4 @@ const RightDraw = () => {
   );
 };
 
-export default RightDraw;
+export default DesignerInterface;
