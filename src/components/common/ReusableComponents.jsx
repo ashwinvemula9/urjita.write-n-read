@@ -66,7 +66,7 @@ const Select = ({
   const selectId = id || React.useId();
   
   return (
-    <div className={`flex flex-col gap-1 ${containerClassName}`}>
+    <div className={`flex flex-col gap-1 ${containerClassName} `}>
       {label && (
         <label htmlFor={selectId} className={`text-sm font-medium text-gray-700 ${labelClassName}`}>
           {label} {required && <span className="text-red-500">*</span>}
@@ -78,7 +78,7 @@ const Select = ({
         onChange={(e) => onChange(e.target.value)}
         disabled={disabled}
         className={`
-          w-full px-3 py-2 border rounded-md
+          w-full px-3 py-2 border rounded-md 
           focus:outline-none focus:ring-2 focus:ring-blue-500
           disabled:bg-gray-100 disabled:cursor-not-allowed
           ${error ? 'border-red-500' : 'border-gray-300'}
@@ -140,7 +140,7 @@ const Button = ({
   const baseStyles = 'font-medium rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors';
   
   const variants = {
-    primary: 'bg-accent-500 hover:bg-accent-600 text-white transition-colors',
+    primary: 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500',
     secondary: 'bg-gray-200 text-gray-800 hover:bg-gray-300 focus:ring-gray-500',
     danger: 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500'
   };

@@ -418,7 +418,7 @@ const [feedThruSubOpts, setFeedThruSubOpts] = useState([]);
           <div className={`
             w-10 h-10 rounded-full flex items-center justify-center font-medium shadow-sm
             ${step === stepNum 
-              ? ' bg-accent-500 text-white ring-4 ring-blue-100' 
+              ? ' bg-blue-600 text-white ring-4 ring-blue-100' 
               : step > stepNum 
                 ? 'bg-green-400 text-white' 
                 : 'bg-white border-2 border-gray-200 text-gray-400'}
@@ -453,7 +453,7 @@ const [feedThruSubOpts, setFeedThruSubOpts] = useState([]);
       case 1:
         return (
           <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-primary-800">Basic Information</h2>
+            <h2 className="text-2xl font-bold text-black">Basic Information</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Input
                 label="OPP Number"
@@ -492,7 +492,7 @@ const [feedThruSubOpts, setFeedThruSubOpts] = useState([]);
       case 2:
         return (
           <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-primary-800">Material Specifications</h2>
+      <h2 className="text-2xl font-bold text-black">Material Specifications</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Select
           label="Dielectric Material Thickness"   
@@ -557,7 +557,7 @@ const [feedThruSubOpts, setFeedThruSubOpts] = useState([]);
         case 3:
           return (
             <div className="space-y-6">
-              <h2 className="text-2xl font-bold text-primary-800">Connector Specifications</h2>
+              <h2 className="text-2xl font-bold text-black">Connector Specifications</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-4">
                   <Select
@@ -608,22 +608,25 @@ const [feedThruSubOpts, setFeedThruSubOpts] = useState([]);
       case 4:
         return (
           <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-primary-800">Design Rules</h2>
-            <div className="bg-neutral-50 p-6 rounded-lg">
+            <h2 className="text-2xl font-bold text-black">Design Rules</h2>
+            <div className="bg-neutral-50 p-6 rounded-lg flex flex-col space-y-6 ">
             <Select
           label="Component"   
           options={[{"value": "B14", "label":"B14 (PCB)"}]}
           value={formData.designRules.category}
           onChange={(value) => handleFieldChange('designRules', 'category', value)}
           required
-        />
-              {formData.designRules.category && <Select
+              />
+              <div>{formData.designRules.category && <Select
+                
                 label="Type of Component"
                 options={componentSubCtegoryOptions}
                 value={formData.designRules.subCategory}
                 onChange={(value) => handleFieldChange('designRules', 'subCategory', value)}
                 required
               />}
+              </div>
+              
               {formData.designRules.subCategory && (<div className="space-y-4">
                 <h3 className="text-lg font-semibold text-gray-700">Component Options</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -738,8 +741,8 @@ const [feedThruSubOpts, setFeedThruSubOpts] = useState([]);
             <div className="w-20">
               {step > 1 && (
                 <Button 
-                  variant="secondary"
-                  className="text-neutral-100 bg-primary-600 hover:bg-primary-700 transition-colors"
+                  variant="primary"
+                  className="text-neutral-100"
                   onClick={() => setStep(prev => prev - 1)}
                 >
                   Previous
@@ -748,7 +751,7 @@ const [feedThruSubOpts, setFeedThruSubOpts] = useState([]);
             </div>
             
             <div className="flex gap-4">
-            {step === 4 && formData.designRules.subCategory && (
+            {step === 4 && formData.designRules.subCategory && !formData.designRules.acknowledge &&(
                 
                 <Button
                   variant="secondary"
@@ -765,7 +768,7 @@ const [feedThruSubOpts, setFeedThruSubOpts] = useState([]);
                   <Checkbox
                     label="Acknowledge"
                     checked={formData.designRules.optionsChecked.acknowledge}
-                    onChange={(prev) => handleFieldChange('designRules', 'acknowledge', !formData.designRules.acknowledge)}
+                    onChange={() => handleFieldChange('designRules', 'acknowledge', !formData.designRules.acknowledge)}
                   />
                   {formData.designRules.acknowledge && <Button
                   variant="secondary"
@@ -782,7 +785,7 @@ const [feedThruSubOpts, setFeedThruSubOpts] = useState([]);
               )}
               {step !== 4 && <Button
                 variant="primary"
-                className="bg-accent-500 hover:bg-accent-600 text-white transition-colors"
+                className="bg-blue-600 hover:bg-blue-800 text-white transition-colors"
                 disabled={!isStepValid}
                 onClick={() => step < 4 ? setStep(prev => prev + 1) : console.log('Submit', formData)}
               >
@@ -790,7 +793,7 @@ const [feedThruSubOpts, setFeedThruSubOpts] = useState([]);
               </Button>}
               {step === 4 && formData.designRules.acknowledge && <Button
                 variant="primary"
-                className="bg-accent-500 hover:bg-accent-600 text-white transition-colors"
+                className="bg-blue-600 hover:bg-blue-800 text-white transition-colors"
                 disabled={!isStepValid}
                 onClick={() => step < 4 ? setStep(prev => prev + 1) : console.log('Submit', formData)}
               >

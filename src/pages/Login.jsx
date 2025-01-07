@@ -4,6 +4,8 @@ import { Cpu, Mail, Lock, ArrowRight, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
+import { Button } from '../components/common/ReusableComponents';
+import logo from "../assets/logo.svg"
 
 const AnimatedBackground = () => {
   return (
@@ -15,6 +17,27 @@ const AnimatedBackground = () => {
     </div>
   );
 };
+
+
+const GlossyText = () => {
+  return (
+    <div className="relative inline-block transform hover:scale-105 transition-transform duration-300">
+      <span className="text-9xl font-black relative inline-block 
+        bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600 bg-clip-text text-transparent
+        tracking-tight leading-none">
+        Future
+        
+        {/* Main text glow effect */}
+        <div className="absolute inset-0 blur-2xl bg-blue-500/20 -z-10" />
+        
+        
+      </span>
+    </div>
+  );
+};
+
+
+
 
 const FloatingElement = ({ index }) => {
   const size = 40 + Math.random() * 100; // Random size between 40 and 160
@@ -71,8 +94,15 @@ const LoginPage = () => {
 
         <div className="relative z-10 flex flex-col justify-between h-full items-start text-left">
           <div className="flex items-center space-x-4">
-            <Cpu className="w-12 h-12 text-white/90 drop-shadow-2xl" />
+          <div className="w-24 h-24"><img src={logo} alt="Logo" style={{ filter: 'invert(1)' }}/></div>
             <div className="flex flex-col">
+            <div 
+    className="absolute inset-0 bg-gradient-to-b from-transparent via-white/[0.02] to-transparent"
+    style={{ 
+      backgroundSize: '50px 50px',
+      backgroundImage: 'linear-gradient(to right, rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.025) 1px, transparent 1px)'
+    }}
+  ></div>
               <span className="text-4xl font-extrabold text-white bg-clip-text" 
                     style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
                 URJITA
@@ -87,14 +117,10 @@ const LoginPage = () => {
             <h1 className="text-7xl lg:text-8xl font-black text-white"
                 style={{ fontFamily: "'Poppins', sans-serif", letterSpacing: '-0.05em', lineHeight: '1.1' }}>
               Welcome <br /> to the <br />
-              <span className="text-transparent bg-gradient-to-r from-orange-400 via-orange-500 to-orange-600 bg-clip-text
-                             hover:from-orange-300 hover:to-orange-500 transition-all duration-300">
-                Future
-              </span>
+              <GlossyText/>
             </h1>
             <p className="text-xl text-white/80 leading-relaxed max-w-lg font-light">
-              Join us as we redefine possibilities. Experience innovation at its
-              peak, where imagination meets technology.
+            Powering innovation through precision: Where advanced PCB manufacturing meets uncompromising quality standards
             </p>
           </div>
 
@@ -184,18 +210,19 @@ const LoginPage = () => {
               </Link>
             </div>
 
-           <button
-  type="submit"
-  className="w-full h-12 bg-orange-500 text-white rounded-xl
+           <Button
+              type="submit"
+              variant='primary'
+  className="w-full h-12  rounded-xl
            transform transition-all duration-300 ease-out
-           hover:bg-orange-400 hover:scale-[1.02] hover:shadow-lg 
-           hover:shadow-orange-500/25 active:scale-[0.98]"
+           hover:scale-[1.02] hover:shadow-lg 
+            active:scale-[0.98]"
 >
   <span className="flex items-center justify-center space-x-2">
     <span>Sign in</span>
     <ArrowRight className="w-5 h-5" />
   </span>
-</button>
+</Button>
 
           </form>
         </div>
