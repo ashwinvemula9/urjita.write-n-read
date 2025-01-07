@@ -748,7 +748,7 @@ const [feedThruSubOpts, setFeedThruSubOpts] = useState([]);
             </div>
             
             <div className="flex gap-4">
-            {step === 4 && formData.designRules.subCategory && !rules && (
+            {step === 4 && formData.designRules.subCategory && (
                 
                 <Button
                   variant="secondary"
