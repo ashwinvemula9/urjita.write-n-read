@@ -10,14 +10,18 @@ const Input = ({
   required = false,
   error = null,
   placeholder = '',
-  disabled = false
+  disabled = false,
+  className = '',
+  containerClassName = '',
+  labelClassName = '',
+  errorClassName = ''
 }) => {
   const inputId = id || React.useId();
   
   return (
-    <div className="flex flex-col gap-1">
+    <div className={`flex flex-col gap-1 ${containerClassName}`}>
       {label && (
-        <label htmlFor={inputId} className="text-sm font-medium text-gray-700">
+        <label htmlFor={inputId} className={`text-sm font-medium text-gray-700 ${labelClassName}`}>
           {label} {required && <span className="text-red-500">*</span>}
         </label>
       )}
@@ -33,10 +37,11 @@ const Input = ({
           focus:outline-none focus:ring-2 focus:ring-blue-500
           disabled:bg-gray-100 disabled:cursor-not-allowed
           ${error ? 'border-red-500' : 'border-gray-300'}
+          ${className}
         `}
         required={required}
       />
-      {error && <span className="text-sm text-red-500">{error}</span>}
+      {error && <span className={`text-sm text-red-500 ${errorClassName}`}>{error}</span>}
     </div>
   );
 };
@@ -51,14 +56,19 @@ const Select = ({
   required = false,
   error = null,
   placeholder = '',
-  disabled = false
+  disabled = false,
+  className = '',
+  containerClassName = '',
+  labelClassName = '',
+  errorClassName = '',
+  optionClassName = ''
 }) => {
   const selectId = id || React.useId();
   
   return (
-    <div className="flex flex-col gap-1">
+    <div className={`flex flex-col gap-1 ${containerClassName}`}>
       {label && (
-        <label htmlFor={selectId} className="text-sm font-medium text-gray-700">
+        <label htmlFor={selectId} className={`text-sm font-medium text-gray-700 ${labelClassName}`}>
           {label} {required && <span className="text-red-500">*</span>}
         </label>
       )}
@@ -72,17 +82,18 @@ const Select = ({
           focus:outline-none focus:ring-2 focus:ring-blue-500
           disabled:bg-gray-100 disabled:cursor-not-allowed
           ${error ? 'border-red-500' : 'border-gray-300'}
+          ${className}
         `}
         required={required}
       >
-        <option value="">{placeholder || `Select ${label}`}</option>
+        <option value="" className={optionClassName}>{placeholder || `Select ${label}`}</option>
         {options.map((option) => (
-          <option key={option.value} value={option.value}>
+          <option key={option.value} value={option.value} className={optionClassName}>
             {option.label}
           </option>
         ))}
       </select>
-      {error && <span className="text-sm text-red-500">{error}</span>}
+      {error && <span className={`text-sm text-red-500 ${errorClassName}`}>{error}</span>}
     </div>
   );
 };
@@ -92,22 +103,26 @@ const Checkbox = ({
   label,
   checked,
   onChange,
-  disabled = false
+  disabled = false,
+  className = '',
+  containerClassName = '',
+  labelClassName = ''
 }) => (
-  <label className="flex items-center gap-2 cursor-pointer">
+  <label className={`flex items-center gap-2 cursor-pointer ${containerClassName}`}>
     <input
       type="checkbox"
       checked={checked}
       onChange={(e) => onChange(e.target.checked)}
       disabled={disabled}
-      className="
+      className={`
         w-4 h-4 text-blue-600 
         border-gray-300 rounded 
         focus:ring-blue-500
         disabled:opacity-50 disabled:cursor-not-allowed
-      "
+        ${className}
+      `}
     />
-    <span className="text-sm text-gray-700">{label}</span>
+    <span className={`text-sm text-gray-700 ${labelClassName}`}>{label}</span>
   </label>
 );
 
@@ -119,12 +134,13 @@ const Button = ({
   variant = 'primary',
   size = 'medium',
   disabled = false,
-  className = ''
+  className = '',
+  contentClassName = ''
 }) => {
   const baseStyles = 'font-medium rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors';
   
   const variants = {
-    primary: 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500',
+    primary: 'bg-accent-500 hover:bg-accent-600 text-white transition-colors',
     secondary: 'bg-gray-200 text-gray-800 hover:bg-gray-300 focus:ring-gray-500',
     danger: 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500'
   };
@@ -148,7 +164,7 @@ const Button = ({
         ${className}
       `}
     >
-      {children}
+      <span className={contentClassName}>{children}</span>
     </button>
   );
 };
@@ -158,16 +174,21 @@ const Card = ({
   children,
   title,
   subtitle,
-  gradient = false
+  gradient = false,
+  className = '',
+  headerClassName = '',
+  titleClassName = '',
+  subtitleClassName = '',
+  bodyClassName = ''
 }) => (
-  <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+  <div className={`bg-white rounded-xl shadow-lg overflow-hidden ${className}`}>
     {title && (
-      <div className={`px-6 py-4 ${gradient ? 'bg-gradient-to-r from-blue-600 to-blue-700' : 'bg-blue-600'}`}>
-        <h2 className="text-2xl font-bold text-white">{title}</h2>
-        {subtitle && <p className="mt-1 text-blue-100">{subtitle}</p>}
+      <div className={`px-6 py-4 ${gradient ? 'bg-gradient-to-r from-blue-600 to-blue-700' : 'bg-blue-600'} ${headerClassName}`}>
+        <h2 className={`text-2xl font-bold text-white ${titleClassName}`}>{title}</h2>
+        {subtitle && <p className={`mt-1 text-blue-100 ${subtitleClassName}`}>{subtitle}</p>}
       </div>
     )}
-    <div className="p-6">
+    <div className={`p-6 ${bodyClassName}`}>
       {children}
     </div>
   </div>
@@ -177,15 +198,20 @@ const Card = ({
 const FormSection = ({
   title,
   children,
-  className = ''
+  className = '',
+  titleClassName = '',
+  gridClassName = '',
+  titleContainerClassName = ''
 }) => (
   <div className={`space-y-4 ${className}`}>
     {title && (
-      <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">
-        {title}
-      </h3>
+      <div className={`border-b pb-2 ${titleContainerClassName}`}>
+        <h3 className={`text-lg font-semibold text-gray-800 ${titleClassName}`}>
+          {title}
+        </h3>
+      </div>
     )}
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div className={`grid grid-cols-1 md:grid-cols-2 gap-4 ${gridClassName}`}>
       {children}
     </div>
   </div>
