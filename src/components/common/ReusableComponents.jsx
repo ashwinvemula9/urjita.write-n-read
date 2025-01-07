@@ -47,6 +47,7 @@ const Input = ({
 };
 
 // Select Component
+
 const Select = ({
   label,
   id,
@@ -64,39 +65,57 @@ const Select = ({
   optionClassName = ''
 }) => {
   const selectId = id || React.useId();
-  
+ 
   return (
-    <div className={`flex flex-col gap-1 ${containerClassName} `}>
+    <div className={`flex flex-col gap-1 ${containerClassName}`}>
       {label && (
         <label htmlFor={selectId} className={`text-sm font-medium text-gray-700 ${labelClassName}`}>
           {label} {required && <span className="text-red-500">*</span>}
         </label>
       )}
-      <select
-        id={selectId}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        disabled={disabled}
-        className={`
-          w-full px-3 py-2 border rounded-md 
-          focus:outline-none focus:ring-2 focus:ring-blue-500
-          disabled:bg-gray-100 disabled:cursor-not-allowed
-          ${error ? 'border-red-500' : 'border-gray-300'}
-          ${className}
-        `}
-        required={required}
-      >
-        <option value="" className={optionClassName}>{placeholder || `Select ${label}`}</option>
-        {options.map((option) => (
-          <option key={option.value} value={option.value} className={optionClassName}>
-            {option.label}
-          </option>
-        ))}
-      </select>
+      <div className="relative">
+        <select
+          id={selectId}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          disabled={disabled}
+          className={`
+            w-full px-3 py-2 border rounded-md appearance-none
+            focus:outline-none focus:ring-2 focus:ring-blue-500
+            disabled:bg-gray-100 disabled:cursor-not-allowed
+            [&::-webkit-scrollbar]:w-2
+            [&::-webkit-scrollbar-track]:bg-transparent
+            [&::-webkit-scrollbar-thumb]:bg-blue-500
+            [&::-webkit-scrollbar-thumb]:rounded-full
+            ${error ? 'border-primary-700' : 'border-gray-300'}
+            ${className}
+          `}
+          required={required}
+        >
+          <option value="" className={optionClassName}>{placeholder || `Select ${label}`}</option>
+          {options.map((option) => (
+            <option key={option.value} value={option.value} className={optionClassName}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+        <div className="pointer-events-none absolute inset-y-0 right-8 flex items-center">
+          <svg className="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
+            <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+          </svg>
+        </div>
+      </div>
       {error && <span className={`text-sm text-red-500 ${errorClassName}`}>{error}</span>}
     </div>
   );
 };
+
+
+
+
+
+
+;
 
 // Checkbox Component
 const Checkbox = ({
