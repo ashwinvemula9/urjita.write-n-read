@@ -26,17 +26,6 @@ axiosInstance.interceptors.request.use(
 );
 
 // Response interceptor
-axiosInstance.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      localStorage.removeItem("accessToken");
-      localStorage.removeItem("refreshToken");
-      window.location.href = "/login";
-    }
-    return Promise.reject(error);
-  }
-);
 
 axiosInstance.interceptors.response.use(
   (response) => response,
@@ -68,6 +57,14 @@ export const authAPI = {
       }
       return response.data;
     } catch (error) {
+      if (error.response?.status === 401) {
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("refreshToken");
+        // Get message from error.response.data
+        throw new Error(error.response.data.message || "Invalid credentials");
+      }
+
+      // For other errors, use fallback message
       const errorMessage =
         error.response?.data?.message || "Login failed. Please try again.";
       throw new Error(errorMessage);

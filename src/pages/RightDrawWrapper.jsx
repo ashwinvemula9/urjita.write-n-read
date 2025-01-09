@@ -2,7 +2,7 @@ import React from 'react';
 import { useAuth } from '../context/AuthContext';
 import ReviewerInterface from './rightdraw-interfaces/ReviewerInterface';
 import DesignerInterface from './rightdraw-interfaces/DesignerInterface';
-
+import AdminInterface from './rightdraw-interfaces/AdminInterface'
 const RightDrawWrapper = () => {
   const { user } = useAuth();
 
@@ -10,14 +10,17 @@ const RightDrawWrapper = () => {
     return null;
   }
 
-  switch ("designer") {
-    case 'designer':
+  switch (user.userType) {
+    case 'CADesigner':
       return <DesignerInterface />;
-    case 'reviewer':
+    case 'Reviewer':
       return <ReviewerInterface />;
-    case 'approver':
+    case 'Approver':
       // TODO: Create and render ApproverInterface component
       return <div>Approver Interface Coming Soon</div>;
+      case 'Admin':
+        // TODO: Create and render ApproverInterface component
+        return <AdminInterface/>;
     default:
       return <div>Access Denied</div>;
   }

@@ -11,12 +11,12 @@ const FeatureCard = ({ title, description, icon: Icon, onClick }) => (
                hover:shadow-xl hover:scale-[1.02] transition-all duration-300 cursor-pointer
                group relative overflow-hidden"
   >
-    <div className="absolute inset-0 bg-gradient-to-r from-orange-500/10 to-transparent opacity-0 
+    <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-transparent opacity-0 
                     group-hover:opacity-100 transition-opacity duration-300" />
     
     <div className="relative z-10">
-      <div className="w-12 h-12 bg-orange-500/10 rounded-lg flex items-center justify-center mb-4
-                     group-hover:bg-orange-500/20 transition-colors duration-300">
+      <div className="w-12 h-12 bg-blue-500/10 rounded-lg flex items-center justify-center mb-4
+                     group-hover:bg-blue-500/20 transition-colors duration-300">
         <Icon className="w-6 h-6 text-blue-600" />
       </div>
       
@@ -39,7 +39,7 @@ const Home = () => {
     if (!user) {
       navigate('/login');
     }
-  }, [user, navigate]);
+  }, [user]);
 
   const features = [
     {
