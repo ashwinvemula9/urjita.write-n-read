@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { ArrowDown, ArrowUp, Target, FileText } from 'lucide-react';
 import { Input, Select, Checkbox, Button, Card, FormSection } from '../../components/common/ReusableComponents';
 import { pcbAPI, componentsAPI } from '../../services/api/endpoints';
 
-// Define step configurations
+// Step configurations
 const STEPS = {
   BASIC_INFO: 'basicInfo',
   PCB_SPECS: 'pcbSpecs',
@@ -11,6 +11,12 @@ const STEPS = {
 };
 
 const STEP_ORDER = [STEPS.BASIC_INFO, STEPS.PCB_SPECS, STEPS.DESIGN_RULES];
+
+const REQUIRED_FIELDS = {
+  [STEPS.BASIC_INFO]: ['oppNumber', 'opuNumber', 'modelName', 'partNumber'],
+  [STEPS.PCB_SPECS]: [],
+  [STEPS.DESIGN_RULES]: ['selectedComponent', 'selectedSubCategory']
+};
 
 const initialState = {
   [STEPS.BASIC_INFO]: {
@@ -39,57 +45,136 @@ const DesignerInterface = () => {
   const [formData, setFormData] = useState(initialState);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [isDirty, setIsDirty] = useState(false);
 
-  // Fetch initial data
+  // Load saved form data if exists
   useEffect(() => {
-    const fetchInitialData = async () => {
+    const savedData = localStorage.getItem('designerFormData');
+    if (savedData) {
       try {
-        setLoading(true);
-        const [specs, components] = await Promise.all([
-          pcbAPI.getSpecification(1),
-          componentsAPI.getAll()
-        ]);
-        
-        setFormData(prev => ({
-          ...prev,
-          [STEPS.PCB_SPECS]: {
-            ...prev[STEPS.PCB_SPECS],
-            specifications: specs
-          },
-          [STEPS.DESIGN_RULES]: {
-            ...prev[STEPS.DESIGN_RULES],
-            components
-          }
-        }));
+        setFormData(JSON.parse(savedData));
       } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
+        console.error('Error loading saved form data:', err);
+      }
+    }
+  }, []);
+
+  // Save form data when it changes
+  useEffect(() => {
+    if (isDirty) {
+      localStorage.setItem('designerFormData', JSON.stringify(formData));
+    }
+  }, [formData, isDirty]);
+
+  // Prompt user before leaving if form is dirty
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      if (isDirty) {
+        e.preventDefault();
+        e.returnValue = '';
       }
     };
 
-    fetchInitialData();
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [isDirty]);
+
+  // Fetch initial data
+  const fetchInitialData = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const [specs, components] = await Promise.all([
+        pcbAPI.getSpecification(1),
+        componentsAPI.getAll()
+      ]);
+      
+      if (!specs || !components) {
+        throw new Error('Failed to load initial data');
+      }
+
+      setFormData(prev => ({
+        ...prev,
+        [STEPS.PCB_SPECS]: {
+          ...prev[STEPS.PCB_SPECS],
+          specifications: specs
+        },
+        [STEPS.DESIGN_RULES]: {
+          ...prev[STEPS.DESIGN_RULES],
+          components
+        }
+      }));
+    } catch (err) {
+      setError(err.message || 'An error occurred while loading initial data');
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  // Validation functions
+  useEffect(() => {
+    fetchInitialData();
+  }, [fetchInitialData]);
+
+  // Fetch rules when component and subcategory are selected
+  const fetchRules = useCallback(async (componentId) => {
+    if (!componentId) return;
+
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const response = await pcbAPI.getSectionGroupings(componentId);
+      console.log(response)
+      if (!response?.[0]?.rules) {
+        throw new Error('No rules found for this component');
+      }
+
+      setFormData(prev => ({
+        ...prev,
+        [STEPS.DESIGN_RULES]: {
+          ...prev[STEPS.DESIGN_RULES],
+          rules: response[0].rules
+        }
+      }));
+    } catch (err) {
+      setError(err.message || 'An error occurred while loading rules');
+    } finally {
+      setLoading(false);
+    }
+  }, [formData[STEPS.DESIGN_RULES].subCategories]);
+
+  useEffect(() => {
+    const { selectedComponent, selectedSubCategory } = formData[STEPS.DESIGN_RULES];
+    if (selectedComponent && selectedSubCategory) {
+      fetchRules(selectedComponent);
+    }
+  }, [
+    formData[STEPS.DESIGN_RULES].selectedComponent,
+    formData[STEPS.DESIGN_RULES].selectedSubCategory,
+    fetchRules
+  ]);
+
+  // Improved validation functions
   const validators = {
     [STEPS.BASIC_INFO]: (data) => {
-      const required = ['oppNumber', 'opuNumber', 'modelName', 'partNumber'];
-      return required.every(field => data[field]?.trim());
+      return REQUIRED_FIELDS[STEPS.BASIC_INFO].every(field => 
+        data[field]?.trim().length > 0
+      );
     },
     [STEPS.PCB_SPECS]: (data) => {
+      if (!data.specifications.length) return false;
       return Object.keys(data.selectedSpecs).length === data.specifications.length;
     },
     [STEPS.DESIGN_RULES]: (data) => {
-      return data.selectedComponent && data.selectedSubCategory && data.acknowledge;
+      return REQUIRED_FIELDS[STEPS.DESIGN_RULES].every(field => 
+        data[field]?.trim().length > 0
+      ) && data.acknowledge && data.rules.length > 0;
     }
   };
 
-  const currentStepKey = STEP_ORDER[currentStep];
-  const isCurrentStepValid = validators[currentStepKey]?.(formData[currentStepKey]) ?? false;
-
-  // Handle field changes
-  const handleFieldChange = (step, field, value) => {
+  const handleFieldChange = useCallback((step, field, value) => {
+    setIsDirty(true);
     setFormData(prev => ({
       ...prev,
       [step]: {
@@ -97,34 +182,58 @@ const DesignerInterface = () => {
         [field]: value
       }
     }));
+  }, []);
+
+  const currentStepKey = STEP_ORDER[currentStep];
+  const isCurrentStepValid = validators[currentStepKey]?.(formData[currentStepKey]) ?? false;
+
+  const handleSubmit = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      // Validate all steps
+      const isValid = STEP_ORDER.every(step => 
+        validators[step](formData[step])
+      );
+
+      if (!isValid) {
+        throw new Error('Please complete all required fields');
+      }
+
+      // Add your submit logic here
+      await submitForm(formData);
+      
+      // Reset form on success
+      setFormData(initialState);
+      setCurrentStep(0);
+      setIsDirty(false);
+      localStorage.removeItem('designerFormData');
+      
+    } catch (err) {
+      setError(err.message || 'An error occurred while submitting the form');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // Fetch rules when component and subcategory are selected
-  useEffect(() => {
-    const { selectedComponent, selectedSubCategory } = formData[STEPS.DESIGN_RULES];
-    if (selectedComponent && selectedSubCategory) {
-      const fetchRules = async () => {
-        try {
-          setLoading(true);
-          const response = await pcbAPI.getSectionGroupings(selectedComponent);
-          setFormData(prev => ({
-            ...prev,
-            [STEPS.DESIGN_RULES]: {
-              ...prev[STEPS.DESIGN_RULES],
-              rules: response[0]?.rules || []
-            }
-          }));
-        } catch (err) {
-          setError(err.message);
-        } finally {
-          setLoading(false);
-        }
-      };
-      fetchRules();
+  const handleExportPDF = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Add your PDF export logic here
+      // const pdf = await generatePDF(formData);
+      // await downloadPDF(pdf);
+      
+    } catch (err) {
+      setError(err.message || 'An error occurred while exporting PDF');
+    } finally {
+      setLoading(false);
     }
-  }, [formData[STEPS.DESIGN_RULES].selectedComponent, formData[STEPS.DESIGN_RULES].selectedSubCategory]);
+  };
 
-  // Step content components
+  // Step content components remain the same as in your original code
   const StepContent = {
     [STEPS.BASIC_INFO]: () => (
       <FormSection title="Basic Information">
@@ -287,10 +396,6 @@ const DesignerInterface = () => {
     </div>
   );
 
-  const handleSubmit = async () => {
-    // Implement your submit logic here
-    console.log('Form submitted:', formData);
-  };
 
   return (
     <div className="min-h-screen bg-neutral-900 py-12 px-3">

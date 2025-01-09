@@ -27,7 +27,7 @@ axiosInstance.interceptors.request.use(
 
 // Response interceptor
 axiosInstance.interceptors.response.use(
-  (response) => response.data,
+  (response) => response,
   (error) => {
     if (error.response?.status === 401) {
       localStorage.removeItem("accessToken");
@@ -61,9 +61,10 @@ export const authAPI = {
   login: async (credentials) => {
     try {
       const response = await axiosInstance.post("/auth/login/", credentials);
-      if (response?.access && response?.refresh) {
-        localStorage.setItem("accessToken", response.access);
-        localStorage.setItem("refreshToken", response.refresh);
+      console.log("in login", response);
+      if (response?.data?.access && response?.data?.refresh) {
+        localStorage.setItem("accessToken", response.data.access);
+        localStorage.setItem("refreshToken", response.data.refresh);
       }
       return response.data;
     } catch (error) {
@@ -83,9 +84,9 @@ export const authAPI = {
   register: async (userData) => {
     try {
       const response = await axiosInstance.post("/auth/register/", userData);
-      if (response.data?.access && response.data?.refresh) {
-        localStorage.setItem("accessToken", response.data.access);
-        localStorage.setItem("refreshToken", response.data.refresh);
+      if (response?.access && response?.refresh) {
+        localStorage.setItem("accessToken", response.access);
+        localStorage.setItem("refreshToken", response.refresh);
       }
       return response.data;
     } catch (error) {
@@ -425,8 +426,8 @@ export const ErrorHandler = {
       // Server responded with error
       return {
         status: error.response.status,
-        message: error.response.data.message || "An error occurred",
-        data: error.response.data,
+        message: error.response.message || "An error occurred",
+        data: error.response,
       };
     } else if (error.request) {
       // Request made but no response

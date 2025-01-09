@@ -102,11 +102,13 @@ const LoginPage = () =>{
     try {
       // Call the API
       const response = await authAPI.login({ email, password });
-      console.log(response)
+      console.log("tokens",response)
       
       // Update auth context
       login({
-        user: "sai"
+        user: "sai",
+        userType: "designer",
+        
         
       });
 

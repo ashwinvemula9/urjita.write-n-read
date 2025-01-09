@@ -10,7 +10,7 @@ const RightDrawWrapper = () => {
     return null;
   }
 
-  switch (user.userType) {
+  switch ("designer") {
     case 'designer':
       return <DesignerInterface />;
     case 'reviewer':
