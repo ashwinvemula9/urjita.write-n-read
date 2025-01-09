@@ -6,6 +6,7 @@ import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../components/common/ReusableComponents';
 import logo from "../assets/logo.svg"
+import {authAPI} from '../services/api/endpoints'
 
 const AnimatedBackground = () => {
   return (
@@ -69,20 +70,72 @@ const FloatingElement = ({ index }) => {
 };
 
 
-const LoginPage = () => {
+const LoginPage = () =>{
   const [showPassword, setShowPassword] = useState(false);
-  const [email, setEmail] = useState('s@g.com');
-  const [password, setPassword] = useState('sample');
+  const [email, setEmail] = useState('testuser@gmail.com');
+  const [password, setPassword] = useState('testuser');
+  const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
   
-  const signInHandler = (e) => {
+  const signInHandler = async (e) => {
     e.preventDefault();
-    login({ user: "Designer", userType: "designer", token: "siiyqqoioiw" });
-    toast.success("Welcome back!", { autoClose: 1500 });
-    navigate('/');
-  };
+    setLoading(true);
 
+    //remove this after recieving the apis
+    // login({
+    //   user: "response.user || email",
+    //   userType: "designer",
+    //   token: "response.token"
+    // });
+    // toast.success("Successfully logged in!", { 
+    //   autoClose: 1500,
+    //   position: "top-right",
+    //   hideProgressBar: false,
+    //   closeOnClick: true,
+    //   pauseOnHover: true,
+    //   draggable: true,
+    // });
+    // navigate('/');
+    
+    //uncomment this
+    try {
+      // Call the API
+      const response = await authAPI.login({ email, password });
+      console.log(response)
+      
+      // Update auth context
+      login({
+        user: "sai"
+        
+      });
+
+      // Show success message
+      toast.success("Successfully logged in!", { 
+        autoClose: 1500,
+        position: "top-right",
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+
+      // Navigate to home
+      navigate('/');
+    } catch (error) {
+      // Show error message
+      toast.error(error.message || "Login failed. Please try again.", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <div className="min-h-screen w-full flex bg-neutral-900">
       <div className="hidden lg:flex w-1/2 p-12 relative overflow-hidden">
@@ -134,14 +187,14 @@ const LoginPage = () => {
       <div className="w-full lg:w-1/2 bg-white flex items-center justify-center p-8 lg:p-12">
         <div className="w-full max-w-md bg-white rounded-3xl shadow-xl p-8 space-y-8">
           <div className="text-center lg:text-left">
-          <h2 className="text-3xl font-bold bg-gradient-to-r from-indigo-950 to-indigo-800 bg-clip-text text-transparent leading-relaxed">
-  Sign in
-</h2>
-
+            <h2 className="text-3xl font-bold bg-gradient-to-r from-indigo-950 to-indigo-800 bg-clip-text text-transparent leading-relaxed">
+              Sign in
+            </h2>
           </div>
 
           <form className="space-y-6" onSubmit={signInHandler}>
             <div className="space-y-5">
+              {/* Email Input */}
               <div>
                 <label className="block text-sm font-medium text-neutral-700 mb-2">
                   Email
@@ -161,10 +214,12 @@ const LoginPage = () => {
                     placeholder="Enter your email"
                     className="block w-full bg-transparent py-3 px-2 text-neutral-900 
                              placeholder:text-neutral-400 focus:outline-none sm:text-sm"
+                    disabled={loading}
                   />
                 </div>
               </div>
 
+              {/* Password Input */}
               <div>
                 <label className="block text-sm font-medium text-neutral-700 mb-2">
                   Password
@@ -184,12 +239,14 @@ const LoginPage = () => {
                     placeholder="••••••••"
                     className="block w-full bg-transparent py-3 px-2 text-neutral-900 
                              placeholder:text-neutral-400 focus:outline-none sm:text-sm"
+                    disabled={loading}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     className="flex items-center justify-center w-12 hover:text-neutral-600 
                              transition-colors duration-200"
+                    disabled={loading}
                   >
                     {showPassword ? 
                       <EyeOff className="h-5 w-5 text-neutral-400 hover:text-indigo-500 transition-colors" /> : 
@@ -210,25 +267,24 @@ const LoginPage = () => {
               </Link>
             </div>
 
-           <Button
+            <Button
               type="submit"
               variant='primary'
-  className="w-full h-12  rounded-xl
-           transform transition-all duration-300 ease-out
-           hover:scale-[1.02] hover:shadow-lg 
-            active:scale-[0.98]"
->
-  <span className="flex items-center justify-center space-x-2">
-    <span>Sign in</span>
-    <ArrowRight className="w-5 h-5" />
-  </span>
-</Button>
-
+              className="w-full h-12 rounded-xl transform transition-all duration-300 ease-out
+                      hover:scale-[1.02] hover:shadow-lg active:scale-[0.98]"
+              disabled={loading}
+            >
+              <span className="flex items-center justify-center space-x-2">
+                <span>{loading ? "Signing in..." : "Sign in"}</span>
+                {!loading && <ArrowRight className="w-5 h-5" />}
+              </span>
+            </Button>
           </form>
         </div>
       </div>
     </div>
   );
 };
+  
 
 export default LoginPage;
