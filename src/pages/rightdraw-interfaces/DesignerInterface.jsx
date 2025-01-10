@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { ArrowDown, ArrowUp, Target, FileText } from 'lucide-react';
+import { ArrowDown, ArrowUp, Target, FileText, } from 'lucide-react';
 import { Input, Select, Checkbox, Button, Card, FormSection } from '../../components/common/ReusableComponents';
-import { pcbAPI, componentsAPI } from '../../services/api/endpoints';
+import { pcbAPI, componentsAPI, rulesAPI } from '../../services/api/endpoints';
+import { toast } from 'react-toastify';
 
 // Step configurations
 const STEPS = {
@@ -13,9 +14,9 @@ const STEPS = {
 const STEP_ORDER = [STEPS.BASIC_INFO, STEPS.PCB_SPECS, STEPS.DESIGN_RULES];
 
 const REQUIRED_FIELDS = {
-  [STEPS.BASIC_INFO]: ['oppNumber', 'opuNumber', 'modelName', 'partNumber'],
+  [STEPS.BASIC_INFO]: ['oppNumber', 'opuNumber', 'modelName', 'partNumber',"component"],
   [STEPS.PCB_SPECS]: [],
-  [STEPS.DESIGN_RULES]: ['selectedComponent', 'selectedSubCategory']
+  [STEPS.DESIGN_RULES]: ['selectedSubCategory']
 };
 
 const initialState = {
@@ -24,19 +25,18 @@ const initialState = {
     opuNumber: '',
     eduNumber: '',
     modelName: '',
-    partNumber: ''
+    partNumber: '',
+    component: '',
   },
   [STEPS.PCB_SPECS]: {
     specifications: [],
-    selectedSpecs: {}
+    selectedSpecs: {},
   },
   [STEPS.DESIGN_RULES]: {
-    components: [],
-    selectedComponent: '',
-    subCategories: [],
-    selectedSubCategory: '',
+    selectedCheckboxes: {},
     rules: [],
-    acknowledge: false
+    acknowledge: false,
+ 
   }
 };
 
@@ -57,7 +57,34 @@ const DesignerInterface = () => {
         console.error('Error loading saved form data:', err);
       }
     }
-  }, []);
+  }, []); 
+  async function fetchRules() {
+    try {
+      const resp = await rulesAPI.getRules()
+      console.log({resp})
+      setFormData((prev) => {
+        return {
+          ...prev,
+          [STEPS.DESIGN_RULES]: {
+            ...prev[STEPS.DESIGN_RULES],
+            rules:resp
+            
+          }
+        }
+
+      })
+  
+    } catch {
+      toast.error("Something Went wrong, Please try again later")
+    }
+  }
+
+  useEffect(() => {
+    if (currentStep === 2) {
+      fetchRules()
+      
+    }
+  },[currentStep])
 
   // Save form data when it changes
   useEffect(() => {
@@ -88,23 +115,57 @@ const DesignerInterface = () => {
       const [specs, components] = await Promise.all([
         pcbAPI.getSpecification(1),
         componentsAPI.getAll()
+        
       ]);
       
       if (!specs || !components) {
         throw new Error('Failed to load initial data');
       }
 
-      setFormData(prev => ({
-        ...prev,
-        [STEPS.PCB_SPECS]: {
-          ...prev[STEPS.PCB_SPECS],
-          specifications: specs
-        },
-        [STEPS.DESIGN_RULES]: {
-          ...prev[STEPS.DESIGN_RULES],
-          components
+      setFormData(prev => {
+       const tempSpecs = specs
+        tempSpecs[4]={
+          "category_id": 5,
+          "category_name": "B14 Size",
+          "subcategories": [
+            
+              {
+                  "id": 17,
+                  "name": "SMT",
+                  "is_design_options_exists": true,
+                  "is_sub_2_categories_exists": false
+              },
+              {
+                  "id": 18,
+                  "name": "Plug-in",
+                  "is_design_options_exists": false,
+                  "is_sub_2_categories_exists": false
+              },
+              {
+                  "id": 19,
+                  "name": "Connectorized in Solid Bottom case",
+                  "is_design_options_exists": false,
+                  "is_sub_2_categories_exists": false
+              }
+          
+          ]
         }
-      }));
+        return {
+          ...prev,
+          [STEPS.BASIC_INFO]: {
+            ...prev[STEPS.BASIC_INFO],
+            components,
+
+          },
+       
+
+          [STEPS.PCB_SPECS]: {
+
+            ...prev[STEPS.PCB_SPECS],
+            specifications: tempSpecs
+          },
+        }
+      });
     } catch (err) {
       setError(err.message || 'An error occurred while loading initial data');
     } finally {
@@ -117,43 +178,43 @@ const DesignerInterface = () => {
   }, [fetchInitialData]);
 
   // Fetch rules when component and subcategory are selected
-  const fetchRules = useCallback(async (componentId) => {
-    if (!componentId) return;
+  // const fetchRules = useCallback(async (componentId) => {
+  //   if (!componentId) return;
 
-    try {
-      setLoading(true);
-      setError(null);
+  //   try {
+  //     setLoading(true);
+  //     setError(null);
       
-      const response = await pcbAPI.getSectionGroupings(componentId);
-      console.log(response)
-      if (!response?.[0]?.rules) {
-        throw new Error('No rules found for this component');
-      }
+  //     const response = await pcbAPI.getSectionGroupings(componentId);
+  //     console.log(response)
+  //     if (!response?.[0]?.rules) {
+  //       throw new Error('No rules found for this component');
+  //     }
 
-      setFormData(prev => ({
-        ...prev,
-        [STEPS.DESIGN_RULES]: {
-          ...prev[STEPS.DESIGN_RULES],
-          rules: response[0].rules
-        }
-      }));
-    } catch (err) {
-      setError(err.message || 'An error occurred while loading rules');
-    } finally {
-      setLoading(false);
-    }
-  }, [formData[STEPS.DESIGN_RULES].subCategories]);
+  //     setFormData(prev => ({
+  //       ...prev,
+  //       [STEPS.DESIGN_RULES]: {
+  //         ...prev[STEPS.DESIGN_RULES],
+  //         rules: response[0].rules
+  //       }
+  //     }));
+  //   } catch (err) {
+  //     setError(err.message || 'An error occurred while loading rules');
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // }, [formData[STEPS.DESIGN_RULES].subCategories]);
 
-  useEffect(() => {
-    const { selectedComponent, selectedSubCategory } = formData[STEPS.DESIGN_RULES];
-    if (selectedComponent && selectedSubCategory) {
-      fetchRules(selectedComponent);
-    }
-  }, [
-    formData[STEPS.DESIGN_RULES].selectedComponent,
-    formData[STEPS.DESIGN_RULES].selectedSubCategory,
-    fetchRules
-  ]);
+  // useEffect(() => {
+  //   const { selectedComponent, selectedSubCategory } = formData[STEPS.DESIGN_RULES];
+  //   if (selectedComponent && selectedSubCategory) {
+  //     fetchRules(selectedComponent);
+  //   }
+  // }, [
+  //   formData[STEPS.DESIGN_RULES].selectedComponent,
+  //   formData[STEPS.DESIGN_RULES].selectedSubCategory,
+  //   fetchRules
+  // ]);
 
   // Improved validation functions
   const validators = {
@@ -232,6 +293,7 @@ const DesignerInterface = () => {
       setLoading(false);
     }
   };
+  console.log(formData)
 
   // Step content components remain the same as in your original code
   const StepContent = {
@@ -266,6 +328,16 @@ const DesignerInterface = () => {
           onChange={(value) => handleFieldChange(STEPS.BASIC_INFO, 'partNumber', value)}
           required
         />
+        <Select
+          label="Component"
+          options={[{
+            value: 'b14',
+            label: "B14"
+          }]}
+          value={formData[STEPS.BASIC_INFO].component}
+          onChange={(value) => handleFieldChange(STEPS.BASIC_INFO, 'component', value)}
+          required
+        />
       </FormSection>
     ),
 
@@ -295,67 +367,155 @@ const DesignerInterface = () => {
     ),
 
     [STEPS.DESIGN_RULES]: () => (
-      <FormSection title="Design Rules">
-        <Select
-          label="Component"
-          options={formData[STEPS.DESIGN_RULES].components.map(comp => ({
-            value: comp.id,
-            label: comp.component_name
-          }))}
-          value={formData[STEPS.DESIGN_RULES].selectedComponent}
-          onChange={(value) => handleFieldChange(STEPS.DESIGN_RULES, 'selectedComponent', value)}
-          required
-        />
-        {formData[STEPS.DESIGN_RULES].selectedComponent && (
-          <Select
-            label="Sub Category"
-            options={formData[STEPS.DESIGN_RULES].subCategories}
-            value={formData[STEPS.DESIGN_RULES].selectedSubCategory}
-            onChange={(value) => handleFieldChange(STEPS.DESIGN_RULES, 'selectedSubCategory', value)}
-            required
-          />
-        )}
-        {formData[STEPS.DESIGN_RULES].rules.length > 0 && (
-          <div className="col-span-2">
-            {formData[STEPS.DESIGN_RULES].rules.map((rule, index) => (
-              <div key={index} className="bg-white rounded-lg p-4 border border-gray-200 mb-4">
-                <div className="flex justify-between items-start">
-                  <div className="space-y-2">
-                    <h3 className="font-semibold text-lg text-gray-900">
-                      {rule.parameter}
-                    </h3>
-                    <p className="text-sm text-gray-600">
-                      Rule {rule.rule_number}
-                    </p>
-                  </div>
-                  <div className="flex items-center space-x-2 text-sm">
-                    <div className="flex flex-col items-center px-3 py-2 bg-blue-50 rounded-md">
-                      <ArrowUp className="h-4 w-4 text-blue-600" />
-                      <span className="text-blue-600 font-medium">{rule.max_value}</span>
-                      <span className="text-xs text-gray-500">Max</span>
-                    </div>
-                    <div className="flex flex-col items-center px-3 py-2 bg-green-50 rounded-md">
-                      <Target className="h-4 w-4 text-green-600" />
-                      <span className="text-green-600 font-medium">{rule.nominal}</span>
-                      <span className="text-xs text-gray-500">Nominal</span>
-                    </div>
-                    <div className="flex flex-col items-center px-3 py-2 bg-blue-50 rounded-md">
-                      <ArrowDown className="h-4 w-4 text-blue-600" />
-                      <span className="text-blue-600 font-medium">{rule.min_value}</span>
-                      <span className="text-xs text-gray-500">Min</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-            <Checkbox
-              label="I acknowledge these design rules"
-              checked={formData[STEPS.DESIGN_RULES].acknowledge}
-              onChange={(checked) => handleFieldChange(STEPS.DESIGN_RULES, 'acknowledge', checked)}
+      <div className="w-full max-w-7xl mx-auto p-6 bg-white rounded-xl shadow-sm">
+      <h2 className="text-2xl font-bold text-gray-900 mb-8">Select Options for design rules to be followed</h2>
+      
+      <div className="grid gap-8">
+        {/* Left sidebar with checkboxes */}
+        <div className="col-span-3 border-r border-gray-200 pr-6">
+      <h3 className="text-lg font-semibold text-gray-900 mb-6">Select Design Options:</h3>
+      <div className="space-y-4">
+        {formData[STEPS.DESIGN_RULES].rules.map((option) => (
+          <label
+            key={option.design_option_id}
+            className="flex items-center gap-3 cursor-pointer group transition-colors duration-200 p-3 rounded-lg hover:bg-gray-50"
+          >
+            <input
+              type="checkbox"
+              className="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 
+                        cursor-pointer transition-colors duration-200
+                        checked:bg-blue-600 checked:border-transparent
+                        hover:border-blue-600"
+              checked={formData[STEPS.DESIGN_RULES].selectedCheckboxes[option.design_option_id] || false}
+              onChange={(e) => {
+                handleFieldChange(
+                  STEPS.DESIGN_RULES,
+                  'selectedCheckboxes',
+                  {
+                    ...formData[STEPS.DESIGN_RULES].selectedCheckboxes,
+                    [option.design_option_id]: e.target.checked
+                  }
+                );
+              }}
             />
+            <div className="text-sm font-medium pl-3 text-gray-700 group-hover:text-gray-900 transition-colors duration-200">
+              {option.desing_option_name}
+            </div>
+          </label>
+        ))}
+      </div>
+    </div>
+
+        {/* Main content area */}
+        <div className="col-span-9">
+          <div className="space-y-8">
+            {Object.entries(formData[STEPS.DESIGN_RULES].selectedCheckboxes)
+              .filter(([_, isSelected]) => isSelected)
+              .map(([optionId]) => {
+                const option = formData[STEPS.DESIGN_RULES].rules.find(
+                  rule => rule.design_option_id.toString() === optionId
+                );
+                
+                if (!option) return null;
+
+                return (
+                  <div key={optionId} className="bg-gray-50 rounded-xl p-6">
+                    <h3 className="text-xl font-bold text-gray-900 mb-6 pb-3 border-b border-gray-200">
+                      {option.desing_option_name}
+                    </h3>
+                    
+                    {option.sections_applied.map((section) => (
+                      <div key={section.id} className="mb-8 last:mb-0">
+                        <h4 className="text-lg font-semibold text-gray-800 mb-4">
+                          {section.section_name}
+                        </h4>
+                        
+                        <div className="grid grid-cols-1 gap-4">
+                          {section.rules.map((rule) => (
+                            <div 
+                              key={rule.id} 
+                              className="bg-white rounded-lg p-4 border border-gray-200 hover:border-gray-300 transition-colors"
+                            >
+                              <div className="flex justify-between items-center">
+                                <div className="space-y-2">
+                                  <div className="flex items-center space-x-3">
+                                    <h5 className="font-semibold text-gray-900">
+                                      {rule.parameter}
+                                    </h5>
+                                    <span className="text-xs px-2 py-1 bg-gray-100 rounded-full text-gray-600">
+                                      Rule {rule.rule_number}
+                                    </span>
+                                  </div>
+                                  {rule.comments && (
+                                    <p className="text-sm text-gray-600">
+                                      {rule.comments}
+                                    </p>
+                                  )}
+                                </div>
+                                
+                                {rule.min_value !== "N/A" && (
+                                  <div className="flex items-center space-x-4">
+                                    <div className="flex flex-col items-center">
+                                      <div className="bg-blue-50 p-2 rounded-lg">
+                                        <ArrowUp className="h-5 w-5 text-blue-600" />
+                                      </div>
+                                      <span className="text-sm font-medium text-blue-600 mt-1">
+                                        {rule.max_value}
+                                      </span>
+                                      <span className="text-xs text-gray-500">Max</span>
+                                    </div>
+                                    
+                                    <div className="flex flex-col items-center">
+                                      <div className="bg-green-50 p-2 rounded-lg">
+                                        <Target className="h-5 w-5 text-green-600" />
+                                      </div>
+                                      <span className="text-sm font-medium text-green-600 mt-1">
+                                        {rule.nominal}
+                                      </span>
+                                      <span className="text-xs text-gray-500">Nominal</span>
+                                    </div>
+                                    
+                                    <div className="flex flex-col items-center">
+                                      <div className="bg-blue-50 p-2 rounded-lg">
+                                        <ArrowDown className="h-5 w-5 text-blue-600" />
+                                      </div>
+                                      <span className="text-sm font-medium text-blue-600 mt-1">
+                                        {rule.min_value}
+                                      </span>
+                                      <span className="text-xs text-gray-500">Min</span>
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })}
           </div>
-        )}
-      </FormSection>
+
+          {/* Acknowledgment checkbox */}
+          {Object.values(formData[STEPS.DESIGN_RULES].selectedCheckboxes).some(Boolean) && (
+            <div className="mt-8 pt-6 border-t border-gray-200">
+              <label className="flex items-center space-x-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  checked={formData[STEPS.DESIGN_RULES].acknowledge}
+                  onChange={(e) => handleFieldChange(STEPS.DESIGN_RULES, 'acknowledge', e.target.checked)}
+                />
+                <span className="text-sm font-medium text-gray-700">
+                  I acknowledge these design rules
+                </span>
+              </label>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
     )
   };
 
@@ -429,7 +589,6 @@ const DesignerInterface = () => {
                     <Button
                       variant="primary"
                       onClick={handleSubmit}
-                      disabled={!isCurrentStepValid}
                     >
                       Submit
                     </Button>

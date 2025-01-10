@@ -1,7 +1,7 @@
 import axios from "axios";
 
 // Configuration
-const BASE_URL = "https://pcb-design-5nqf.onrender.com";
+const BASE_URL = "http://127.0.0.1:8000";
 
 // Create axios instance
 const axiosInstance = axios.create({
@@ -287,7 +287,204 @@ export const componentsAPI = {
     }
   },
 };
-
+export const rulesAPI = {
+  //   [
+  //     {
+  //         "design_option_id": 1,
+  //         "desing_option_name": "Design with Fixed components",
+  //         "sections_applied": [
+  //             {
+  //                 "id": 1,
+  //                 "design_doc": "D3-E002",
+  //                 "section_name": "Common sections",
+  //                 "rules": [
+  //                     {
+  //                         "id": 1,
+  //                         "design_doc": "D3-E002",
+  //                         "rule_number": "4.1.1",
+  //                         "parameter": "Following PTFE materials: OAK, NX9245, NX9250, NH9350 shall not be used in new designs without management approval",
+  //                         "min_value": "1",
+  //                         "max_value": "100",
+  //                         "nominal": "50",
+  //                         "comments": "INFO"
+  //                     },
+  //                     {
+  //                         "id": 3,
+  //                         "design_doc": "D3-E002",
+  //                         "rule_number": "4.1.2",
+  //                         "parameter": "Following PCB material OAK, TLX, TLY, PTFE/Woven Glass/Ceramic NH9350,Ceramic RO3003 are NOT recommended for SMT design",
+  //                         "min_value": "N/A",
+  //                         "max_value": "N/A",
+  //                         "nominal": "N/A",
+  //                         "comments": "Info"
+  //                     }
+  //                 ]
+  //             },
+  //             {
+  //                 "id": 3,
+  //                 "design_doc": "D3-E002",
+  //                 "section_name": "Section-B",
+  //                 "rules": [
+  //                     {
+  //                         "id": 5,
+  //                         "design_doc": "D3-E002",
+  //                         "rule_number": "4.10.1",
+  //                         "parameter": "Solder mask strip width",
+  //                         "min_value": "0.005",
+  //                         "max_value": "0.01",
+  //                         "nominal": "0.015",
+  //                         "comments": "0.015\" for PCB with Tin/Lead or Tin finish that use HASL"
+  //                     },
+  //                     {
+  //                         "id": 2,
+  //                         "design_doc": "D3-E002",
+  //                         "rule_number": "4.5.1",
+  //                         "parameter": "\"Copper Trace clearance from PCB edges at TOP side \"",
+  //                         "min_value": "0.01",
+  //                         "max_value": "0.01",
+  //                         "nominal": "0.01",
+  //                         "comments": "\"For PCB size upto 0.350\"\", 0.0075\"\" min acceptable\r\nThis minimum is accepatble for Castellated lead.\r\nApart from Castellated lead 0.014\"\" minimum for PCB dielectric thickness upto 0.03\"\"\r\nApart from Castellated lead 0.016\"\" minimum for PCB dielectric thickness greater than 0.03\"\"\""
+  //                     }
+  //                 ]
+  //             }
+  //         ]
+  //     },
+  //     {
+  //         "design_option_id": 2,
+  //         "desing_option_name": "Aircoil",
+  //         "sections_applied": [
+  //             {
+  //                 "id": 1,
+  //                 "design_doc": "D3-E002",
+  //                 "section_name": "Common sections",
+  //                 "rules": [
+  //                     {
+  //                         "id": 1,
+  //                         "design_doc": "D3-E002",
+  //                         "rule_number": "4.1.1",
+  //                         "parameter": "Following PTFE materials: OAK, NX9245, NX9250, NH9350 shall not be used in new designs without management approval",
+  //                         "min_value": "1",
+  //                         "max_value": "100",
+  //                         "nominal": "50",
+  //                         "comments": "INFO"
+  //                     },
+  //                     {
+  //                         "id": 3,
+  //                         "design_doc": "D3-E002",
+  //                         "rule_number": "4.1.2",
+  //                         "parameter": "Following PCB material OAK, TLX, TLY, PTFE/Woven Glass/Ceramic NH9350,Ceramic RO3003 are NOT recommended for SMT design",
+  //                         "min_value": "N/A",
+  //                         "max_value": "N/A",
+  //                         "nominal": "N/A",
+  //                         "comments": "Info"
+  //                     }
+  //                 ]
+  //             }
+  //         ]
+  //     },
+  //     {
+  //         "design_option_id": 3,
+  //         "desing_option_name": "XFMR",
+  //         "sections_applied": [
+  //             {
+  //                 "id": 2,
+  //                 "design_doc": "D3-E002",
+  //                 "section_name": "XFMR sections",
+  //                 "rules": [
+  //                     {
+  //                         "id": 6,
+  //                         "design_doc": "D3-E002",
+  //                         "rule_number": "4.4.1",
+  //                         "parameter": "Is welding pad dimension as per the wire guage requirement",
+  //                         "min_value": "N/A",
+  //                         "max_value": "N/A",
+  //                         "nominal": "N/A",
+  //                         "comments": "iNFO"
+  //                     }
+  //                 ]
+  //             }
+  //         ]
+  //     },
+  //     {
+  //         "design_option_id": 4,
+  //         "desing_option_name": "Ceramic Resonator",
+  //         "sections_applied": [
+  //             {
+  //                 "id": 4,
+  //                 "design_doc": "D3-E002",
+  //                 "section_name": "Sections of D3-E021(Plug-in)",
+  //                 "rules": [
+  //                     {
+  //                         "id": 5,
+  //                         "design_doc": "D3-E002",
+  //                         "rule_number": "4.10.1",
+  //                         "parameter": "Solder mask strip width",
+  //                         "min_value": "0.005",
+  //                         "max_value": "0.01",
+  //                         "nominal": "0.015",
+  //                         "comments": "0.015\" for PCB with Tin/Lead or Tin finish that use HASL"
+  //                     },
+  //                     {
+  //                         "id": 4,
+  //                         "design_doc": "D3-E002",
+  //                         "rule_number": "4.1.3",
+  //                         "parameter": "Material TLX-9 with dielectric thickness greater or equal 10 mils is not to be used for PCBs that contain Plated Through Holes (PTH) due to CTE mismatch concerns.",
+  //                         "min_value": "N/A",
+  //                         "max_value": "N/A",
+  //                         "nominal": "N/A",
+  //                         "comments": "INFO"
+  //                     }
+  //                 ]
+  //             }
+  //         ]
+  //     },
+  //     {
+  //         "design_option_id": 5,
+  //         "desing_option_name": "Coupling PCB",
+  //         "sections_applied": [
+  //             {
+  //                 "id": 3,
+  //                 "design_doc": "D3-E002",
+  //                 "section_name": "Section-B",
+  //                 "rules": [
+  //                     {
+  //                         "id": 5,
+  //                         "design_doc": "D3-E002",
+  //                         "rule_number": "4.10.1",
+  //                         "parameter": "Solder mask strip width",
+  //                         "min_value": "0.005",
+  //                         "max_value": "0.01",
+  //                         "nominal": "0.015",
+  //                         "comments": "0.015\" for PCB with Tin/Lead or Tin finish that use HASL"
+  //                     },
+  //                     {
+  //                         "id": 2,
+  //                         "design_doc": "D3-E002",
+  //                         "rule_number": "4.5.1",
+  //                         "parameter": "\"Copper Trace clearance from PCB edges at TOP side \"",
+  //                         "min_value": "0.01",
+  //                         "max_value": "0.01",
+  //                         "nominal": "0.01",
+  //                         "comments": "\"For PCB size upto 0.350\"\", 0.0075\"\" min acceptable\r\nThis minimum is accepatble for Castellated lead.\r\nApart from Castellated lead 0.014\"\" minimum for PCB dielectric thickness upto 0.03\"\"\r\nApart from Castellated lead 0.016\"\" minimum for PCB dielectric thickness greater than 0.03\"\"\""
+  //                     }
+  //                 ]
+  //             }
+  //         ]
+  //     }
+  // ]
+  getRules: async () => {
+    try {
+      const response = await axiosInstance.get(
+        "/right-draw/design-options/12/"
+      );
+      return response.data;
+    } catch (error) {
+      const errorMessage =
+        error.response?.data?.message || "Failed to fetch components.";
+      throw new Error(errorMessage);
+    }
+  },
+};
 // CAD Templates API
 export const cadAPI = {
   getTemplates: async () => {
