@@ -72,8 +72,8 @@ const FloatingElement = ({ index }) => {
 
 const LoginPage = () =>{
   const [showPassword, setShowPassword] = useState(false);
-  const [email, setEmail] = useState('testreviewer@gmail.com');
-  const [password, setPassword] = useState('testreviewer');
+  const [email, setEmail] = useState('testdesigner@gmail.com');
+  const [password, setPassword] = useState('testdesigner');
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
