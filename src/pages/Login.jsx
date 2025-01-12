@@ -1,12 +1,12 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Cpu, Mail, Lock, ArrowRight, Eye, EyeOff } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
-import { toast } from 'react-toastify';
-import { useNavigate } from 'react-router-dom';
-import { Button } from '../components/common/ReusableComponents';
-import logo from "../assets/logo.svg"
-import {authAPI} from '../services/api/endpoints'
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
+import { Cpu, Mail, Lock, ArrowRight, Eye, EyeOff } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
+import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
+import { Button } from "../components/common/ReusableComponents";
+import logo from "../assets/logo.svg";
+import { authAPI } from "../services/api/endpoints";
 
 const AnimatedBackground = () => {
   return (
@@ -19,31 +19,26 @@ const AnimatedBackground = () => {
   );
 };
 
-
 const GlossyText = () => {
   return (
     <div className="relative inline-block transform hover:scale-105 transition-transform duration-300">
-      <span className="text-9xl font-black relative inline-block 
+      <span
+        className="text-9xl font-black relative inline-block 
         bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600 bg-clip-text text-transparent
-        tracking-tight leading-none">
+        tracking-tight leading-none"
+      >
         Future
-        
         {/* Main text glow effect */}
         <div className="absolute inset-0 blur-2xl bg-blue-500/20 -z-10" />
-        
-        
       </span>
     </div>
   );
 };
 
-
-
-
 const FloatingElement = ({ index }) => {
   const size = 40 + Math.random() * 100; // Random size between 40 and 160
-  const top = Math.random() * 100;  // Random vertical position (up to 100% of height)
-  const left = Math.random() * 82;  // Random left position within 50% of the panel width
+  const top = Math.random() * 100; // Random vertical position (up to 100% of height)
+  const left = Math.random() * 82; // Random left position within 50% of the panel width
   const baseDelay = -index * 1.5;
 
   return (
@@ -54,10 +49,10 @@ const FloatingElement = ({ index }) => {
       style={{
         width: `${size}px`,
         height: `${size}px`,
-        top: `${top}%`,  // Random vertical positioning
-        left: `${left}%`,  // Random horizontal positioning, restricted to 50% of the panel width
+        top: `${top}%`, // Random vertical positioning
+        left: `${left}%`, // Random horizontal positioning, restricted to 50% of the panel width
         animationDelay: `${baseDelay}s`,
-        animationDuration: '25s',
+        animationDuration: "25s",
       }}
     >
       <div
@@ -69,15 +64,15 @@ const FloatingElement = ({ index }) => {
   );
 };
 
-
-const LoginPage = () =>{
+const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
-  const [email, setEmail] = useState('testdesigner@gmail.com');
-  const [password, setPassword] = useState('testdesigner');
+  const [email, setEmail] = useState("testdesigner@gmail.com");
+  // const [email, setEmail] = useState("testuser@gmail.com");
+  const [password, setPassword] = useState("testdesigner");
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
-  
+
   const signInHandler = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -88,7 +83,7 @@ const LoginPage = () =>{
     //   userType: "designer",
     //   token: "response.token"
     // });
-    // toast.success("Successfully logged in!", { 
+    // toast.success("Successfully logged in!", {
     //   autoClose: 1500,
     //   position: "top-right",
     //   hideProgressBar: false,
@@ -97,23 +92,22 @@ const LoginPage = () =>{
     //   draggable: true,
     // });
     // navigate('/');
-    
+
     //uncomment this
     try {
       // Call the API
       const response = await authAPI.login({ email, password });
-      console.log("tokens",response)
-      
+      console.log("tokens", response);
+
+      const isAdmin = false;
       // Update auth context
       login({
         user: email,
-        userType: response.role,
-        
-        
+        userType: isAdmin ? "Admin" : response.role,
       });
 
       // Show success message
-      toast.success("Successfully logged in!", { 
+      toast.success("Successfully logged in!", {
         autoClose: 1500,
         position: "top-right",
         hideProgressBar: false,
@@ -123,7 +117,8 @@ const LoginPage = () =>{
       });
 
       // Navigate to home
-      navigate('/');
+      navigate(isAdmin ? "/right-draw" : "/");
+      localStorage.removeItem("designerFormData");
     } catch (error) {
       // Show error message
       toast.error(error.message || "Login failed. Please try again.", {
@@ -149,39 +144,53 @@ const LoginPage = () =>{
 
         <div className="relative z-10 flex flex-col justify-between h-full items-start text-left">
           <div className="flex items-center space-x-4">
-          <div className="w-24 h-24"><img src={logo} alt="Logo" style={{ filter: 'invert(1)' }}/></div>
+            <div className="w-24 h-24">
+              <img src={logo} alt="Logo" style={{ filter: "invert(1)" }} />
+            </div>
             <div className="flex flex-col">
-            <div 
-    className="absolute inset-0 bg-gradient-to-b from-transparent via-white/[0.02] to-transparent"
-    style={{ 
-      backgroundSize: '50px 50px',
-      backgroundImage: 'linear-gradient(to right, rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.025) 1px, transparent 1px)'
-    }}
-  ></div>
-              <span className="text-4xl font-extrabold text-white bg-clip-text" 
-                    style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+              <div
+                className="absolute inset-0 bg-gradient-to-b from-transparent via-white/[0.02] to-transparent"
+                style={{
+                  backgroundSize: "50px 50px",
+                  backgroundImage:
+                    "linear-gradient(to right, rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.025) 1px, transparent 1px)",
+                }}
+              ></div>
+              <span
+                className="text-4xl font-extrabold text-white bg-clip-text"
+                style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+              >
                 URJITA
               </span>
               <span className="text-sm font-medium text-white/70 tracking-widest uppercase">
-                Electronics 
+                Electronics
               </span>
             </div>
           </div>
 
           <div className="flex flex-col space-y-8">
-            <h1 className="text-7xl lg:text-8xl font-black text-white"
-                style={{ fontFamily: "'Poppins', sans-serif", letterSpacing: '-0.05em', lineHeight: '1.1' }}>
+            <h1
+              className="text-7xl lg:text-8xl font-black text-white"
+              style={{
+                fontFamily: "'Poppins', sans-serif",
+                letterSpacing: "-0.05em",
+                lineHeight: "1.1",
+              }}
+            >
               Welcome <br /> to the <br />
-              <GlossyText/>
+              <GlossyText />
             </h1>
             <p className="text-xl text-white/80 leading-relaxed max-w-lg font-light">
-            Powering innovation through precision: Where advanced PCB manufacturing meets uncompromising quality standards
+              Powering innovation through precision: Where advanced PCB
+              manufacturing meets uncompromising quality standards
             </p>
           </div>
 
           <div className="flex items-center space-x-6 mt-auto">
             <span className="text-white/30 text-sm">|</span>
-            <span className="text-white/50 text-sm">© 2025 Urjita Electronics</span>
+            <span className="text-white/50 text-sm">
+              © 2025 Urjita Electronics
+            </span>
           </div>
         </div>
       </div>
@@ -201,10 +210,12 @@ const LoginPage = () =>{
                 <label className="block text-sm font-medium text-neutral-700 mb-2">
                   Email
                 </label>
-                <div className="flex items-center bg-neutral-50 rounded-xl border border-neutral-200 
+                <div
+                  className="flex items-center bg-neutral-50 rounded-xl border border-neutral-200 
                                transition-all duration-300 ease-in-out group
                                hover:border-indigo-400 focus-within:border-indigo-500 
-                               focus-within:ring-2 focus-within:ring-indigo-500/20">
+                               focus-within:ring-2 focus-within:ring-indigo-500/20"
+                >
                   <div className="flex items-center justify-center w-12">
                     <Mail className="h-5 w-5 text-neutral-400 group-hover:text-indigo-500 transition-colors" />
                   </div>
@@ -226,10 +237,12 @@ const LoginPage = () =>{
                 <label className="block text-sm font-medium text-neutral-700 mb-2">
                   Password
                 </label>
-                <div className="flex items-center bg-neutral-50 rounded-xl border border-neutral-200 
+                <div
+                  className="flex items-center bg-neutral-50 rounded-xl border border-neutral-200 
                                transition-all duration-300 ease-in-out group
                                hover:border-indigo-400 focus-within:border-indigo-500 
-                               focus-within:ring-2 focus-within:ring-indigo-500/20">
+                               focus-within:ring-2 focus-within:ring-indigo-500/20"
+                >
                   <div className="flex items-center justify-center w-12">
                     <Lock className="h-5 w-5 text-neutral-400 group-hover:text-indigo-500 transition-colors" />
                   </div>
@@ -250,10 +263,11 @@ const LoginPage = () =>{
                              transition-colors duration-200"
                     disabled={loading}
                   >
-                    {showPassword ? 
-                      <EyeOff className="h-5 w-5 text-neutral-400 hover:text-indigo-500 transition-colors" /> : 
+                    {showPassword ? (
+                      <EyeOff className="h-5 w-5 text-neutral-400 hover:text-indigo-500 transition-colors" />
+                    ) : (
                       <Eye className="h-5 w-5 text-neutral-400 hover:text-indigo-500 transition-colors" />
-                    }
+                    )}
                   </button>
                 </div>
               </div>
@@ -271,7 +285,7 @@ const LoginPage = () =>{
 
             <Button
               type="submit"
-              variant='primary'
+              variant="primary"
               className="w-full h-12 rounded-xl transform transition-all duration-300 ease-out
                       hover:scale-[1.02] hover:shadow-lg active:scale-[0.98]"
               disabled={loading}
@@ -287,6 +301,5 @@ const LoginPage = () =>{
     </div>
   );
 };
-  
 
 export default LoginPage;
