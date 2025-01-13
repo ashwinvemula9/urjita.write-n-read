@@ -3,8 +3,7 @@ import { createBrowserRouter } from 'react-router-dom';
 import Layout from '../components/layout/Layout';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import ProtectedRoute from '../components/auth/ProtectedRoute';
-import ForgotPasswordPage from '../pages/ForgotPasswordPage';
-import RightDraw from '../pages/rightdraw-interfaces/DesignerInterface';
+
 import { Sample } from '../pages/Sample';
 import RightDrawWrapper from '../pages/rightDrawWrapper';
 
@@ -52,14 +51,6 @@ export const router = createBrowserRouter([
         element: (
           <Suspense fallback={<LoadingSpinner />}>
             <About />
-          </Suspense>
-        ),
-      },
-      {
-        path: 'forgot-password',
-        element: (
-          <Suspense fallback={<LoadingSpinner />}>
-            <ForgotPasswordPage />
           </Suspense>
         ),
       },
