@@ -23,6 +23,7 @@ const LoginPage = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
 
+
   const signInHandler = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -361,6 +362,5 @@ const LoginPage = () => {
     </div>
   );
 };
-  
 
 export default LoginPage;
