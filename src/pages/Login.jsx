@@ -8,12 +8,13 @@ import { authAPI } from '../services/api/endpoints';
 import logo from "../assets/logo.svg";
 import AnimatedBackground from '../components/common/AnimatedBackground';
 import GlossyText from '../components/common/GlossyText';
+import DesignerInterface from './rightdraw-interfaces/DesignerInterface';
 
 
 const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
-  const [email, setEmail] = useState('testdesigner@gmail.com');
-  const [password, setPassword] = useState('testdesigner');
+  const [email, setEmail] = useState('verifierashwin@gmail.com');
+  const [password, setPassword] = useState('verifierashwin');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
 
@@ -84,7 +85,8 @@ const LoginPage = () => {
     }
   };
 
-  const renderLoginForm = () => (
+     
+      const renderLoginForm = () => (
     <form className="space-y-6" onSubmit={signInHandler}>
       <div className="space-y-5">
         {/* Email Input */}
@@ -342,6 +344,7 @@ const LoginPage = () => {
           </div>
         </div>
       </div>
+      {/* <DesignerInterface /> */}
 
       <div className="w-full lg:w-1/2 bg-white flex items-center justify-center p-8 lg:p-12">
         <div className="w-full max-w-md bg-white rounded-3xl shadow-xl p-8 space-y-8">

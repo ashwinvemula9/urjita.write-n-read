@@ -167,10 +167,21 @@ export const pcbAPI = {
   //   },
   //   ... additional categories
   // ]
-  getSpecification: async (id) => {
+  getSpecification: async (id, designerOrreviewer) => {
+    const flag =
+      designerOrreviewer === "designer"
+        ? {
+            is_designer: 1,
+          }
+        : {
+            is_reviewer: 1,
+          };
     try {
       const response = await axiosInstance.get(
-        `/right-draw/pcb-specification/${id}/`
+        `/right-draw/pcb-specification/${id}/`,
+        {
+          params: flag,
+        }
       );
       return response.data;
     } catch (error) {
@@ -290,7 +301,9 @@ export const componentsAPI = {
 export const rulesAPI = {
   getDesignOptions: async () => {
     try {
-      const response = await axiosInstance.get("right-draw/design-options/12/");
+      const response = await axiosInstance.get(
+        "right-draw/design-options/110/"
+      );
       return response.data;
     } catch (err) {
       console.log(err);
@@ -363,7 +376,7 @@ export const cadAPI = {
   createTemplate: async (templateData) => {
     try {
       const response = await axiosInstance.post(
-        "/right-draw/cad_design-templates/",
+        "/right-draw/cad-design-templates/",
         templateData
       );
       return response.data;
@@ -375,85 +388,50 @@ export const cadAPI = {
   },
 };
 
-// Request Types (TypeScript interfaces)
-export const PayloadTypes = {
-  Login: {
-    email: "",
-    password: "",
+export const verifierAPI = {
+  getVerifierFields: async (componentId, CategoryId, subcategoryId) => {
+    try {
+      const response = await axiosInstance.get("/right-draw/verifier-fields/", {
+        params: {
+          component_id: componentId,
+          category_id: CategoryId,
+          sub_category_id: subcategoryId,
+        },
+      });
+      console.log("verifierfield", response.data);
+      return response.data;
+    } catch (error) {
+      const errorMessage =
+        error.response?.data?.message || "Failed to fetch CAD templates.";
+      throw new Error(errorMessage);
+    }
+  },
+  createVerifierTemplate: async (data) => {
+    try {
+      const response = await axiosInstance.post(
+        "/right-draw/verifier-templates/",
+        data
+      );
+      return response.data;
+    } catch (error) {
+      const errorMessage =
+        error.response?.data?.message || "Failed to fetch post templates.";
+      throw new Error(errorMessage);
+    }
   },
 
-  Register: {
-    email: "",
-    password: "",
-    password2: "", // confirmation password
-    role: "", // "Approver" or other roles
-  },
-
-  PasswordReset: {
-    email: "",
-  },
-
-  ResetPassword: {
-    password: "",
-    token: "",
-    uidb64: "",
-  },
-
-  CADTemplate: {
-    oppNumber: "",
-    opuNumber: "",
-    eduNumber: "",
-    modelName: "",
-    partNumber: "",
-    component: null, // component ID
-    revisionNumber: null,
-    componentSpecifications: {}, // key-value pairs of specifications
-    designOptions: [], // array of design option IDs
-  },
-
-  PCBSpecification: {
-    category_id: null,
-    category_name: "",
-    subcategories: [
-      {
-        id: null,
-        name: "",
-        is_section_groupings_exists: false,
-        is_sub_2_categories_exists: false,
-      },
-    ],
-  },
-
-  Component: {
-    id: null,
-    created_at: "",
-    updated_at: "",
-    component_name: "",
-    description: null,
-    created_by: null,
-    updated_by: null,
-  },
-
-  SectionGrouping: {
-    id: null,
-    design_doc: "",
-    design_name: "",
-    rules: [
-      {
-        id: null,
-        created_at: "",
-        updated_at: "",
-        design_doc: "",
-        rule_number: "",
-        parameter: "",
-        min_value: null,
-        max_value: null,
-        nominal: null,
-        comments: "",
-        created_by: null,
-        updated_by: null,
-      },
-    ],
+  getVerifyResults: async (data) => {
+    try {
+      const response = await axiosInstance.post(
+        "/right-draw/verify-results/",
+        data
+      );
+      return response.data;
+    } catch (error) {
+      const errorMessage =
+        error.response?.data?.message || "Failed to post verifier results.";
+      throw new Error(errorMessage);
+    }
   },
 };
 

@@ -10,7 +10,7 @@ import {
 import { pcbAPI, componentsAPI, rulesAPI } from "../../services/api/endpoints";
 import { toast } from "react-toastify";
 import RulesComponent from "../RulesComponent";
-import generatePDF from "../PDFDocument";
+import generatePDF from "../pdf-creators/PDFDocumentDesignerInterface";
 
 import { cadAPI } from "../../services/api/endpoints";
 
@@ -102,7 +102,7 @@ const DesignerInterface = () => {
 
     try {
       const [specs, components] = await Promise.all([
-        pcbAPI.getSpecification(1),
+        pcbAPI.getSpecification(1,"designer"),
         componentsAPI.getAll(),
       ]);
 
@@ -110,11 +110,20 @@ const DesignerInterface = () => {
         throw new Error("Failed to load initial data");
       }
 
+
       setApiData(prev => ({
         ...prev,
         specifications: specs,
         components,
       }));
+
+
+      // uncomment this after the real data comes 
+      // setApiData(prev => ({
+      //   ...prev,
+      //   specifications: specs,
+      //   components,
+      // }));
     } catch (err) {
       setErrors(prev => ({
         ...prev,
@@ -308,7 +317,7 @@ const DesignerInterface = () => {
       />
         <Select
           label="Component"
-          options={[{ value: "b14", label: "B14" }]}
+          options={[{ value: 1, label: "B14" }]}
           value={formData[STEPS.BASIC_INFO].component}
           onChange={(value) => handleFieldChange(STEPS.BASIC_INFO, "component", value)}
           required
