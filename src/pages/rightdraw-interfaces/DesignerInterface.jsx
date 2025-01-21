@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { ArrowDown, ArrowUp, Target, FileText } from "lucide-react";
+import { ArrowDown, ArrowUp, Target, FileText, Home, PlusCircle } from "lucide-react";
 import {
   Input,
   Select,
@@ -7,11 +7,12 @@ import {
   Card,
   FormSection,
 } from "../../components/common/ReusableComponents";
+
 import { pcbAPI, componentsAPI, rulesAPI } from "../../services/api/endpoints";
 import { toast } from "react-toastify";
 import RulesComponent from "../RulesComponent";
 import generatePDF from "../pdf-creators/PDFDocumentDesignerInterface";
-
+import { useNavigate } from "react-router-dom";
 import { cadAPI } from "../../services/api/endpoints";
 
 // Constants
@@ -65,6 +66,7 @@ const DesignerInterface = () => {
 
   // API Data State
   const [apiData, setApiData] = useState(initialApiDataState);
+  const [submitted, setSubmitted] = useState(false)
 
   // Loading States
   const [loadingStates, setLoadingStates] = useState({
@@ -79,6 +81,7 @@ const DesignerInterface = () => {
     rules: null,
     submission: null,
   });
+  const navigate = useNavigate()
 
   // Load saved form data
   useEffect(() => {
@@ -246,7 +249,9 @@ const DesignerInterface = () => {
         console.error('Error creating template:', error);
         throw new Error(error.message || 'Failed to create template');
       }
-    };
+  };
+  
+
 
   const handleSubmit = async () => {
     setLoadingStates(prev => ({ ...prev, submission: true }));
@@ -262,8 +267,7 @@ const DesignerInterface = () => {
       await createTemplate(formData);
 
       // Reset form on success
-      setFormData(initialFormState);
-      setCurrentStep(0);
+      setSubmitted(true)
       setIsDirty(false);
       localStorage.removeItem("designerFormData");
     } catch (err) {
@@ -276,7 +280,15 @@ const DesignerInterface = () => {
       setLoadingStates(prev => ({ ...prev, submission: false }));
     }
   };
+  const goHome = () => {
+    navigate("/")
+  }
 
+  const createNew = () => {
+    setFormData(initialFormState);
+    setCurrentStep(0);
+}
+  
   const StepContent = {
     [STEPS.BASIC_INFO]: () => (
       <FormSection title="Basic Information">
@@ -350,73 +362,66 @@ const DesignerInterface = () => {
 
     [STEPS.DESIGN_RULES]: () => (
       <div className="w-full max-w-7xl mx-auto p-6 bg-white rounded-xl shadow-sm">
-        <div className="flex justify-between">
-          <h2 className="text-2xl font-bold mb-8 text-blue-600">
-            Select Options for design rules to be followed
-          </h2>
-          <Button
-            variant="secondary"
-            onClick={() => generatePDF(formData, apiData.specifications, apiData.designRules,apiData.designOptions)}
-            className="h-10"
-          >
-            <div className="flex items-center">
-              <FileText className="mr-2 h-4 w-4" />
-              <span>Export PDF</span>
+       <>
+            <div className="flex justify-between">
+              <h2 className="text-2xl font-bold mb-8 text-blue-600">
+                Select Options for design rules to be followed
+              </h2>
+           
             </div>
-          </Button>
-        </div>
 
-        <div className="grid gap-8">
-          <div className="col-span-3 border-r border-gray-200 pr-6 mb-8">
-            <h3 className="text-lg font-semibold mb-6">Select Design Options:</h3>
-            <div className="space-y-4">
-              {apiData.designOptions.map((option) => (
-                <div
-                  key={option.design_option_id}
-                  className="flex items-center gap-2 cursor-pointer group transition-colors duration-200 p-3 rounded-lg hover:bg-gray-50"
-                >
-                  <input
-                    type="checkbox"
-                    className="h-5 mr-10 w-5"
-                    checked={formData[STEPS.DESIGN_RULES].selectedCheckboxes[option.design_option_id] || false}
-                    onChange={(e) => {
-                      handleFieldChange(STEPS.DESIGN_RULES, "selectedCheckboxes", {
-                        ...formData[STEPS.DESIGN_RULES].selectedCheckboxes,
-                        [option.design_option_id]: e.target.checked,
-                      });
-                    }}
-                  />
-                  <label className="text-sm font-medium text-gray-700 group-hover:text-gray-900 transition-colors duration-200">
-                    {option.desing_option_name}
-                  </label>
+            <div className="grid gap-8">
+              <div className="col-span-3 border-r border-gray-200 pr-6 mb-8">
+                <h3 className="text-lg font-semibold mb-6">Select Design Options:</h3>
+                <div className="space-y-4">
+                  {apiData.designOptions.map((option) => (
+                    <div
+                      key={option.design_option_id}
+                      className="flex items-center gap-2 cursor-pointer group transition-colors duration-200 p-3 rounded-lg hover:bg-gray-50"
+                    >
+                      <input
+                        type="checkbox"
+                        className="h-5 mr-10 w-5"
+                        checked={formData[STEPS.DESIGN_RULES].selectedCheckboxes[option.design_option_id] || false}
+                        onChange={(e) => {
+                          handleFieldChange(STEPS.DESIGN_RULES, "selectedCheckboxes", {
+                            ...formData[STEPS.DESIGN_RULES].selectedCheckboxes,
+                            [option.design_option_id]: e.target.checked,
+                          });
+                        }}
+                      />
+                      <label className="text-sm font-medium text-gray-700 group-hover:text-gray-900 transition-colors duration-200">
+                        {option.desing_option_name}
+                      </label>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </div>
-          <div>
-          <RulesComponent rules={apiData.designRules } />
-
-          </div>
-          <div className="col-span-9">
-            {Object.values(formData[STEPS.DESIGN_RULES].selectedCheckboxes).some(Boolean) && (
-              <div className="mt-8 pt-6 border-t border-gray-200">
-                <label className="flex items-center space-x-3 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                    checked={formData[STEPS.DESIGN_RULES].acknowledge}
-                    onChange={(e) =>
-                      handleFieldChange(STEPS.DESIGN_RULES, "acknowledge", e.target.checked)
-                    }
-                  />
-                  <span className="text-sm font-medium text-gray-700">
-                    I acknowledge these design rules
-                  </span>
-                </label>
               </div>
-            )}
-          </div>
-        </div>
+              <div>
+                <RulesComponent rules={apiData.designRules} />
+
+              </div>
+              <div className="col-span-9">
+                {Object.values(formData[STEPS.DESIGN_RULES].selectedCheckboxes).some(Boolean) && (
+                  <div className="mt-8 pt-6 border-t border-gray-200">
+                    <label className="flex items-center space-x-3 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        checked={formData[STEPS.DESIGN_RULES].acknowledge}
+                        onChange={(e) =>
+                          handleFieldChange(STEPS.DESIGN_RULES, "acknowledge", e.target.checked)
+                        }
+                      />
+                      <span className="text-sm font-medium text-gray-700">
+                        I acknowledge these design rules
+                      </span>
+                    </label>
+                  </div>
+                )}
+              </div>
+            </div>
+          </>
         </div>
           
   
@@ -474,66 +479,169 @@ const DesignerInterface = () => {
     </div>
   );
 
-  return (
-    <div className="min-h-screen bg-neutral-900 py-12 px-3">
-      <Card className="min-h-[600px] mx-auto bg-white/95 backdrop-blur-md shadow-xl">
-        <div className="p-8">
-          {renderStepIndicator()}
+  return (<div className="min-h-screen bg-neutral-900 py-1 px-3">
+    <div className="max-w-7xl mx-auto mb-6">
+    </div>
+    
+    <Card className="min-h-[600px] mx-auto bg-white/95 backdrop-blur-md shadow-xl">
+    <h1 className="text-xl font-bold text-black text-center">PCB Design Configuration Interface</h1>
+      
+      <div className="p-8">
+        {renderStepIndicator()}
 
-          {loadingStates.initialData ? (
-            <div className="flex justify-center items-center h-64">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
-            </div>
-          ) : errors.initialData ? (
-            <div className="text-red-500 text-center p-4">{errors.initialData}</div>
-          ) : (
-            StepContent[currentStepKey]?.()
-          )}
-
-          <div className="flex justify-between mt-8 pt-6 border-t border-neutral-200">
-            <Button
-              variant="secondary"
-              onClick={() => setCurrentStep((prev) => prev - 1)}
-              disabled={currentStep === 0}
-            >
-              Previous
-            </Button>
-
-            <div className="flex gap-4">
-              {currentStep === STEP_ORDER.length - 1 ? (
-                <>
-                  {formData[STEPS.DESIGN_RULES].acknowledge && (
-                    <Button 
-                      variant="primary" 
-                      onClick={handleSubmit}
-                      disabled={loadingStates.submission}
-                    >
-                      {loadingStates.submission ? (
-                        <div className="flex items-center gap-2">
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
-                          <span>Submitting...</span>
+        {loadingStates.initialData ? (
+          <div className="flex justify-center items-center h-64">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
+          </div>
+        ) : errors.initialData ? (
+          <div className="text-red-500 text-center p-4">{errors.initialData}</div>
+        ) : currentStepKey === STEPS.DESIGN_RULES ? (
+          <div className="w-full max-w-7xl mx-auto bg-white rounded-xl shadow-sm">
+            {submitted ? (
+              <div className="flex flex-col items-center space-y-4 p-6">
+                <h2 className="text-2xl font-bold text-green-600 mb-6">Design Rules Successfully Submitted!</h2>
+                <div className="flex space-x-4">
+                  <Button
+                    variant="secondary"
+                    onClick={() => generatePDF(formData, apiData.specifications, apiData.designRules, apiData.designOptions)}
+                    className="flex items-center space-x-2 px-6 py-2"
+                  >
+                    <FileText className="h-5 w-5" />
+                    <span>Export PDF</span>
+                      </Button>
+                      
+                  <Button
+                    variant="primary"
+                    onClick={()=>goHome}
+                    className="flex items-center space-x-2 px-6 py-2"
+                  >
+                  <Home className="h-5 w-5" />
+                  <span>Go Home</span>
+                   
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    onClick={()=>createNew()}
+                    className="flex items-center space-x-2 px-6 py-2"
+                  >
+                    <PlusCircle className="h-5 w-5" />
+                    <span>Create New</span>
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                <div className="flex justify-between p-6 border-b border-gray-200">
+                  <h2 className="text-2xl font-bold text-blue-600">
+                    Select Options for Design Rules
+                  </h2>
+                </div>
+                
+                <div className="grid grid-cols-12 gap-6 p-6">
+                  <div className="col-span-4 h-[500px] overflow-hidden">
+                    <h3 className="text-lg font-semibold mb-4">Design Options:</h3>
+                    <div className="overflow-y-auto h-[450px] pr-4 space-y-2">
+                      {apiData.designOptions.map((option) => (
+                        <div
+                          key={option.design_option_id}
+                          className="flex items-center gap-2 cursor-pointer group transition-colors duration-200 p-3 rounded-lg hover:bg-gray-50 border border-gray-100"
+                        >
+                          <input
+                            type="checkbox"
+                            className="h-5 w-5"
+                            checked={formData[STEPS.DESIGN_RULES].selectedCheckboxes[option.design_option_id] || false}
+                            onChange={(e) => {
+                              handleFieldChange(STEPS.DESIGN_RULES, "selectedCheckboxes", {
+                                ...formData[STEPS.DESIGN_RULES].selectedCheckboxes,
+                                [option.design_option_id]: e.target.checked,
+                              });
+                            }}
+                          />
+                          <label className="text-sm font-medium text-gray-700 group-hover:text-gray-900">
+                            {option.desing_option_name}
+                          </label>
                         </div>
-                      ) : (
-                        "Submit"
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div className="col-span-8 h-[500px] overflow-hidden">
+                    <div className="h-full flex flex-col">
+                      <div className="flex-grow overflow-y-auto pr-4">
+                        <RulesComponent rules={apiData.designRules} />
+                      </div>
+                      
+                      {Object.values(formData[STEPS.DESIGN_RULES].selectedCheckboxes).some(Boolean) && (
+                        <div className="mt-4 pt-4 border-t border-gray-200">
+                          <label className="flex items-center space-x-3 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                              checked={formData[STEPS.DESIGN_RULES].acknowledge}
+                              onChange={(e) =>
+                                handleFieldChange(STEPS.DESIGN_RULES, "acknowledge", e.target.checked)
+                              }
+                            />
+                            <span className="text-sm font-medium text-gray-700">
+                              I acknowledge and accept all the design rules specified above
+                            </span>
+                          </label>
+                        </div>
                       )}
-                    </Button>
-                  )}
-                </>
-              ) : (
-                <Button
-                  variant="primary"
-                  onClick={() => setCurrentStep((prev) => prev + 1)}
-                  disabled={!isCurrentStepValid}
-                >
-                  Next
-                </Button>
-              )}
-            </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        ) : (
+          StepContent[currentStepKey]?.()
+        )}
+
+        <div className="flex justify-between mt-8 pt-6 border-t border-neutral-200">
+          <Button
+            variant="secondary"
+            onClick={() => setCurrentStep((prev) => prev - 1)}
+            disabled={currentStep === 0}
+          >
+            Previous
+          </Button>
+
+          <div className="flex gap-4">
+            {currentStep === STEP_ORDER.length - 1 ? (
+              <>
+                {formData[STEPS.DESIGN_RULES].acknowledge && (
+                  <Button 
+                    variant="primary" 
+                    onClick={handleSubmit}
+                    disabled={loadingStates.submission}
+                  >
+                    {loadingStates.submission ? (
+                      <div className="flex items-center gap-2">
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
+                        <span>Submitting...</span>
+                      </div>
+                    ) : (
+                      "Submit"
+                    )}
+                  </Button>
+                )}
+              </>
+            ) : (
+              <Button
+                variant="primary"
+                onClick={() => setCurrentStep((prev) => prev + 1)}
+                disabled={!isCurrentStepValid}
+              >
+                Next
+              </Button>
+            )}
           </div>
         </div>
-      </Card>
-    </div>
-  );
+      </div>
+    </Card>
+  </div>
+);
 };
 
 export default DesignerInterface;

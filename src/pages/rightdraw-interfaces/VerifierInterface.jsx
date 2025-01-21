@@ -337,8 +337,10 @@ const VerifierInterface = () => {
   );
 
   return (
-    <div className="min-h-screen bg-neutral-900 py-12 px-3">
+    <div className="min-h-screen bg-neutral-900 py-1 px-3">
       <Card className="mx-auto bg-white/95 backdrop-blur-md shadow-xl">
+      <h1 className="text-xl font-bold text-black text-center pb-8">PCB Verifier Interface</h1>
+        
         <div className="p-8">
           {renderStepIndicator()}
           
