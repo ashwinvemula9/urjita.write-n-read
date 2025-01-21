@@ -263,39 +263,49 @@ const VerifierInterface = () => {
       case STEPS.VERIFY_RESULTS:
         return (
           <div className="space-y-6">
-            <FormSection title="Verified Query Data">
-              {apiData.verifyResults?.verified_query_data.map((item) => (
-                <div key={item.id} className="col-span-2 flex items-center gap-3 p-3 rounded-lg border">
-                  {item.is_deviated ? (
-                    <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
-                  ) : (
-                    <CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0" />
-                  )}
-                  <div className="flex-grow">
-                    <p className="font-medium">{item.name}</p>
-                    <p className="text-sm text-gray-600">Value: {item.value}</p>
-                  </div>
-                </div>
-              ))}
-            </FormSection>
+             <FormSection title="Verified Query Data">
+        {apiData.verifyResults?.verified_query_data.map((item) => (
+          <div
+            key={item.id}
+            className={`flex items-center gap-3 p-3 rounded-lg border ${
+              item.is_deviated ? 'border-red-500' : 'border-green-500'
+            }`}
+          >
+            {item.is_deviated ? (
+              <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
+            ) : (
+              <CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0" />
+            )}
+            <div className="flex-grow">
+              <p className="font-medium">{item.name}</p>
+              <p className="text-sm text-gray-600">Value: {item.value}</p>
+            </div>
+          </div>
+        ))}
+      </FormSection>
 
-            <FormSection title="Verify Design Fields">
-              {apiData.verifyResults?.verify_design_fields_data.map((item) => (
-                <div key={item.categor_id} className="col-span-2 flex items-center gap-3 p-3 rounded-lg border">
-                  {item.is_deviated ? (
-                    <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
-                  ) : (
-                    <CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0" />
-                  )}
-                  <div className="flex-grow">
-                    <p className="font-medium">{item.name}</p>
-                    <p className="text-sm text-gray-600">
-                      Selected: {item.selected_deviation_name}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </FormSection>
+      <FormSection title="Verify Design Fields">
+        {apiData.verifyResults?.verify_design_fields_data.map((item) => (
+          <div
+            key={item.categor_id}
+            className={`flex items-center gap-3 p-3 rounded-lg border ${
+              item.is_deviated ? 'border-red-500' : 'border-green-500'
+            }`}
+          >
+            {item.is_deviated ? (
+              <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
+            ) : (
+              <CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0" />
+            )}
+            <div className="flex-grow">
+              <p className="font-medium">{item.name}</p>
+              <p className="text-sm text-gray-600">
+                Selected: {item.selected_deviation_name}
+              </p>
+            </div>
+          </div>
+        ))}
+      </FormSection>
           </div>
         );
 

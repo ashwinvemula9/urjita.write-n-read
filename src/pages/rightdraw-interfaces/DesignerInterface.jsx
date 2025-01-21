@@ -284,10 +284,7 @@ const DesignerInterface = () => {
     navigate("/")
   }
 
-  const createNew = () => {
-    setFormData(initialFormState);
-    setCurrentStep(0);
-}
+
   
   const StepContent = {
     [STEPS.BASIC_INFO]: () => (
@@ -483,7 +480,7 @@ const DesignerInterface = () => {
     <div className="max-w-7xl mx-auto mb-6">
     </div>
     
-    <Card className="min-h-[600px] mx-auto bg-white/95 backdrop-blur-md shadow-xl">
+    <Card className="min-h-full mx-auto bg-white/95 backdrop-blur-md shadow-xl">
     <h1 className="text-xl font-bold text-black text-center">PCB Design Configuration Interface</h1>
       
       <div className="p-8">
@@ -516,17 +513,10 @@ const DesignerInterface = () => {
                     className="flex items-center space-x-2 px-6 py-2"
                   >
                   <Home className="h-5 w-5" />
-                  <span>Go Home</span>
+                  <span>Home</span>
                    
                   </Button>
-                  <Button
-                    variant="secondary"
-                    onClick={()=>createNew()}
-                    className="flex items-center space-x-2 px-6 py-2"
-                  >
-                    <PlusCircle className="h-5 w-5" />
-                    <span>Create New</span>
-                  </Button>
+                 
                 </div>
               </div>
             ) : (
