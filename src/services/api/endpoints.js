@@ -174,7 +174,7 @@ export const pcbAPI = {
             is_designer: 1,
           }
         : {
-            is_reviewer: 1,
+            is_verifier: 1,
           };
     try {
       const response = await axiosInstance.get(
