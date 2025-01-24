@@ -5,7 +5,7 @@ import LoadingSpinner from '../components/common/LoadingSpinner';
 import ProtectedRoute from '../components/auth/ProtectedRoute';
 
 import { Sample } from '../pages/Sample';
-import RightDrawWrapper from '../pages/rightDrawWrapper';
+import RightDrawWrapper from '../pages/RightDrawWrapper';
 
 // Lazy load pages
 const Home = lazy(() => import('../pages/Home'));

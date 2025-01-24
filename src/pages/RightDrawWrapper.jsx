@@ -1,16 +1,19 @@
 import React from 'react';
-import { useAuth } from '../context/AuthContext';
 import VerifierInterface from './rightdraw-interfaces/VerifierInterface';
 import DesignerInterface from './rightdraw-interfaces/DesignerInterface';
 import AdminInterface from './rightdraw-interfaces/AdminInterface'
+import { useNavigate } from 'react-router-dom';
 const RightDrawWrapper = () => {
-  const { user } = useAuth();
+  const navigate = useNavigate();
+  const userString = localStorage.getItem("user");
+  const user = userString ? JSON.parse(userString) : null;
+  if(!user){
+   navigate("/login");
+        }
 
-  if (!user) {
-    return null;
-  }
+  console.log({"in right draw wrapper":user});
 
-  switch (user.userType) {
+  switch (user.role) {
     case 'CADesigner':
       return <DesignerInterface />;
     case 'Verifier':

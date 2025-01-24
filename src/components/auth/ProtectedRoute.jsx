@@ -1,8 +1,9 @@
 import { Navigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
 
 export default function ProtectedRoute({ children }) {
-  const { user } = useAuth();
+  const userString = localStorage.getItem("user");
+  const user = userString ? JSON.parse(userString) : null;
+  console.log("IN PROTECTED ROUTE", user?.role);
   const location = useLocation();
 
   if (!user) {

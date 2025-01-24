@@ -9,6 +9,7 @@ import {
 } from "../../components/common/ReusableComponents";
 import { pcbAPI, componentsAPI, verifierAPI } from "../../services/api/endpoints";
 import { toast } from "react-toastify";
+import PageLayout from "../../components/layout/PageLayout";
 
 const STEPS = {
   BASIC_INFO: "basicInfo",
@@ -137,14 +138,7 @@ const VerifierInterface = () => {
       setCurrentStep(prev => prev + 1);
       toast.success("Template created successfully!");
     } catch (error) {
-      const errorData = error.response?.data;
-      if (errorData) {
-        Object.entries(errorData).forEach(([key, value]) => {
-          toast.error(`${key}: ${value[0]}`);
-        });
-      } else {
-        toast.error("Failed to create template");
-      }
+      toast.error(error.message || "An error occurred while creating the template");
     } finally {
       setLoading(prev => ({ ...prev, submission: false }));
     }
@@ -315,25 +309,25 @@ const VerifierInterface = () => {
   };
 
   const renderStepIndicator = () => (
-    <div className="flex justify-between items-center mb-8 px-4">
+    <div className="flex items-center mb-2 px-4">
       {STEP_ORDER.map((stepKey, index) => (
         <div key={stepKey} className="flex items-center flex-1 last:flex-none">
           <div
             className={`
-              w-10 h-10 rounded-full flex items-center justify-center font-medium shadow-sm
+              w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium
               ${
                 currentStep === index
-                  ? "bg-blue-600 text-white ring-4 ring-blue-100"
+                  ? "bg-blue-600 text-white ring-2 ring-blue-100"
                   : currentStep > index
                   ? "bg-green-400 text-white"
-                  : "bg-white border-2 border-gray-200 text-gray-400"
+                  : "bg-white border border-gray-200 text-gray-400"
               }
             `}
           >
             {currentStep > index ? "✓" : index + 1}
           </div>
           {index < STEP_ORDER.length - 1 && (
-            <div className="flex-1 h-1 bg-gray-200">
+            <div className="flex-1 h-0.5 mx-2 bg-gray-200">
               <div
                 className={`h-full transition-all duration-300 ${
                   currentStep > index ? "bg-green-400" : ""
@@ -347,50 +341,64 @@ const VerifierInterface = () => {
   );
 
   return (
-    <div className="min-h-screen bg-neutral-900 py-1 px-3">
-      <Card className="mx-auto bg-white/95 backdrop-blur-md shadow-xl">
-      <h1 className="text-xl font-bold text-black text-center pb-8">PCB Verifier Interface</h1>
-        
-        <div className="p-8">
-          {renderStepIndicator()}
-          
-          {loading.initial ? (
-            <div className="flex justify-center py-12">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
+    <PageLayout>
+      <div className="min-h-[calc(100vh-4rem)] bg-neutral-900 p-8">
+        <div className="bg-white rounded-xl shadow-sm border border-neutral-200 min-h-[calc(100vh-8rem)]">
+          {/* Compact Header with integrated step indicator */}
+          <div className="px-8 py-3 border-b border-neutral-200">
+            <div className="max-w-7xl mx-auto w-full">
+              <h1 className="text-lg font-semibold text-neutral-900 mb-2">PCB Verifier Interface</h1>
+              {renderStepIndicator()}
             </div>
-          ) : (
-            renderStepContent()
-          )}
+          </div>
 
-          <div className="flex justify-between mt-8 pt-6 border-t border-neutral-200">
-            <Button
-              variant="secondary"
-              onClick={() => setCurrentStep((prev) => prev - 1)}
-              disabled={currentStep === 0}
-            >
-              Previous
-            </Button>
-
-            {currentStep < STEP_ORDER.length - 1 && (
-              <Button
-                variant="primary"
-                onClick={currentStep === STEP_ORDER.length - 2 ? handleSubmit : () => setCurrentStep((prev) => prev + 1)}
-                disabled={loading.submission}
-              >
-                {loading.submission ? (
-                  <div className="flex items-center gap-2">
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
-                    <span>Submitting...</span>
+          {/* Main Content */}
+          <div className="flex-1">
+            <div className="px-8 py-6">
+              <div className="max-w-7xl mx-auto">
+                {loading.initial ? (
+                  <div className="flex justify-center py-12">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
                   </div>
                 ) : (
-                  currentStep === STEP_ORDER.length - 2 ? "Submit" : "Next"
+                  renderStepContent()
                 )}
+              </div>
+            </div>
+          </div>
+
+          {/* Footer */}
+          <div className="px-8 py-4 border-t border-neutral-200 mt-auto">
+            <div className="max-w-7xl mx-auto flex justify-between">
+              <Button
+                variant="secondary"
+                onClick={() => setCurrentStep((prev) => prev - 1)}
+                disabled={currentStep === 0}
+              >
+                Previous
               </Button>
-            )}
+
+              {currentStep < STEP_ORDER.length - 1 && (
+                <Button
+                  variant="primary"
+                  onClick={currentStep === STEP_ORDER.length - 2 ? handleSubmit : () => setCurrentStep((prev) => prev + 1)}
+                  disabled={loading.submission}
+                >
+                  {loading.submission ? (
+                    <div className="flex items-center gap-2">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
+                      <span>Submitting...</span>
+                    </div>
+                  ) : (
+                    currentStep === STEP_ORDER.length - 2 ? "Submit" : "Next"
+                  )}
+                </Button>
+              )}
+            </div>
           </div>
         </div>
-      </Card>
-    </div>
+      </div>
+    </PageLayout>
   );
 };
 

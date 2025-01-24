@@ -1,82 +1,54 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
 import { useEffect } from 'react';
-import { ArrowRight, FileText, Settings} from 'lucide-react';
+import { FileText } from 'lucide-react';
+import {FeatureCard} from '../components/common/FeatureCard';
 
-const FeatureCard = ({ title, description, icon: Icon, onClick }) => (
-  <div 
-    onClick={onClick}
-    className="bg-white/95 backdrop-blur-md rounded-xl p-6 shadow-lg border border-neutral-200/50 
-               hover:shadow-xl hover:scale-[1.02] transition-all duration-300 cursor-pointer
-               group relative overflow-hidden"
-  >
-    <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-transparent opacity-0 
-                    group-hover:opacity-100 transition-opacity duration-300" />
-    
-    <div className="relative z-10">
-      <div className="w-12 h-12 bg-blue-500/10 rounded-lg flex items-center justify-center mb-4
-                     group-hover:bg-blue-500/20 transition-colors duration-300">
-        <Icon className="w-6 h-6 text-blue-600" />
-      </div>
-      
-      <h3 className="text-xl font-bold text-neutral-800 mb-2">{title}</h3>
-      <p className="text-neutral-600 mb-4">{description}</p>
-      
-      <div className="flex items-center text-blue-600 font-medium">
-        <span className="mr-2">Launch</span>
-        <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
-      </div>
-    </div>
-  </div>
-);
+
 
 const Home = () => {
-  const { user } = useAuth();
   const navigate = useNavigate();
+  console.log("IN HOME");
+  const userString = localStorage.getItem("user");
+  const user = userString ? JSON.parse(userString) : null;
+  if(!user){
+    navigate("/login");
+  }
+  
 
-  useEffect(() => {
-    if (!user) {
-      navigate('/login');
-    }
-  }, [user]);
+  
+  let description = "";
+  if(user.role === "CADesigner"){
+    description = "Design and manage components.";
+  }else if(user.role === "admin"){
+    description = "Manage users and permissions with our advanced user management tools.";
+  }else if(user.role === "Verifier"){
+    description = "Verify the designs";
+  }else if(user.role === "Approver"){
+    description = "Approve the designs";
+  }
+
+
+
 
   const features = [
     {
-      title: 'Right Draw',
-      description: 'Design and manage PCB layouts with our advanced drawing tools.',
+      title: 'RightDraw',
+      description: description,
       icon: FileText,
       path: '/right-draw'
     },
-    {
-      title: 'Sample',
-      description: 'More Components coming soon.',
-      icon: Settings,
-      path: '/sample'
-    },
-    {
-      title: 'Sample',
-      description: 'More Components coming soon.',
-      icon: Settings,
-      path: '/sample'
-    },
-    {
-      title: 'Sample',
-      description: 'More Components coming soon.',
-      icon: Settings,
-      path: '/sample'
-    }
   ];
 
   return user ? (
-    <div className="min-h-screen bg-neutral-900 py-12 px-4">
-      <div className="max-w-6xl mx-auto">
-        <div className="mb-12">
-          <h1 className="text-4xl font-bold text-white mb-4">Welcome back, {user.user}</h1>
+    <div className="bg-neutral-900 h-full">
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-white mb-2">Welcome back, {user.role}</h1>
           <p className="text-neutral-400">Select a tool to get started with your project</p>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
           {features.map((feature, index) => (
             <FeatureCard
               key={index}

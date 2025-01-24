@@ -8,7 +8,6 @@ import { authAPI } from '../services/api/endpoints';
 import logo from "../assets/logo.svg";
 import AnimatedBackground from '../components/common/AnimatedBackground';
 import GlossyText from '../components/common/GlossyText';
-import DesignerInterface from './rightdraw-interfaces/DesignerInterface';
 
 
 const LoginPage = () => {
@@ -21,7 +20,6 @@ const LoginPage = () => {
   const [loading, setLoading] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [resetEmailSent, setResetEmailSent] = useState(false);
-  const { login } = useAuth();
   const navigate = useNavigate();
 
 
@@ -31,10 +29,14 @@ const LoginPage = () => {
     
     try {
       const response = await authAPI.login({ email, password });
-      login({
-        user: email,
-        userType: response.role,
-      });
+      console.log({response});
+      if (response) {
+        localStorage.setItem("user", JSON.stringify({
+          accessToken: response.access,
+          refreshToken: response.refresh,
+          role: response.role,
+        }));
+      }
 
       toast.success("Successfully logged in!", { 
         autoClose: 1500,

@@ -14,7 +14,10 @@ const axiosInstance = axios.create({
 // Request interceptor
 axiosInstance.interceptors.request.use(
   (config) => {
-    const accessToken = localStorage.getItem("accessToken");
+    const user = localStorage.getItem("user");
+    const userObject = user ? JSON.parse(user) : null;
+    const accessToken = userObject?.accessToken;
+
     if (accessToken) {
       config.headers.Authorization = `Bearer ${accessToken}`;
     }
@@ -50,11 +53,6 @@ export const authAPI = {
   login: async (credentials) => {
     try {
       const response = await axiosInstance.post("/auth/login/", credentials);
-      console.log("in login", response);
-      if (response?.data?.access && response?.data?.refresh) {
-        localStorage.setItem("accessToken", response.data.access);
-        localStorage.setItem("refreshToken", response.data.refresh);
-      }
       return response.data;
     } catch (error) {
       if (error.response?.status === 401) {
@@ -174,7 +172,7 @@ export const pcbAPI = {
             is_designer: 1,
           }
         : {
-            designer: 1,
+            is_designer: 1,
           };
     try {
       const response = await axiosInstance.get(
@@ -315,23 +313,10 @@ export const rulesAPI = {
 
   getRules: async (selectedOptions) => {
     try {
-      // Convert the array into proper query parameters
-      // This will transform [1, 2] into ?designOptions=1&designOptions=2
-
-      const response = await axiosInstance.get("right-draw/design-rules/", {
-        params: {
-          design_option_ids: selectedOptions,
-        },
-        paramsSerializer: (params) => {
-          return Object.entries(params)
-            .flatMap(([key, values]) =>
-              Array.isArray(values)
-                ? values.map((value) => `${key}=${value}`)
-                : `${key}=${values}`
-            )
-            .join("&");
-        },
-      });
+      const queryString = `design_option_ids=${selectedOptions.join(",")}`;
+      const response = await axiosInstance.get(
+        `right-draw/design-rules/?${queryString}`
+      );
       console.log("first", response);
 
       return response.data;
@@ -415,7 +400,9 @@ export const verifierAPI = {
       return response.data;
     } catch (error) {
       const errorMessage =
-        error.response?.data?.message || "Failed to fetch post templates.";
+        error.response?.data?.message ||
+        error.response?.data ||
+        "Failed to create template.";
       throw new Error(errorMessage);
     }
   },

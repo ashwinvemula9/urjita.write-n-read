@@ -172,6 +172,15 @@ const PDFDocumentDesignerInterface = ({ formData, specifications, rules, designO
     formData.designRules.selectedCheckboxes[option.design_option_id]
   );
 
+  // Helper function to find specification name by ID
+  const findSpecificationName = (categoryId, specId) => {
+    const category = specifications.find(spec => spec.category_id === parseInt(categoryId));
+    if (!category) return 'N/A';
+    
+    const subcategory = category.subcategories.find(sub => sub.id === parseInt(specId));
+    return subcategory ? subcategory.name : 'N/A';
+  };
+
   return (
     <Document>
       <Page size="A4" style={styles.page} wrap>
@@ -188,7 +197,9 @@ const PDFDocumentDesignerInterface = ({ formData, specifications, rules, designO
                 <View key={key} style={styles.infoItem}>
                   <View style={styles.infoRow}>
                     <Text style={styles.label}>{key}:</Text>
-                    <Text style={styles.value}>{value}</Text>
+                    <Text style={styles.value}>
+                      {key.toLowerCase() === "component" ? "B14(PCB)" : value}
+                    </Text>
                   </View>
                 </View>
               ))}
@@ -203,7 +214,10 @@ const PDFDocumentDesignerInterface = ({ formData, specifications, rules, designO
                   <View style={styles.infoRow}>
                     <Text style={styles.label}>{spec.category_name}:</Text>
                     <Text style={styles.value}>
-                      {formData.pcbSpecs.selectedSpecs[spec.category_id]}
+                      {findSpecificationName(
+                        spec.category_id,
+                        formData.pcbSpecs.selectedSpecs[spec.category_id]
+                      )}
                     </Text>
                   </View>
                 </View>
