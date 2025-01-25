@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Menu, X, LogOut, ChevronDown } from 'lucide-react';
 import logo from "../../assets/logo.svg";
+import Logo from '../Images/logo';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -27,21 +28,20 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="bg-white/95 backdrop-blur-md border-b border-neutral-200 fixed w-full z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <nav className="backdrop-blur-md w-full z-50 text-neutral-50 ">
+      <div className=" shadow-bottom mx-auto p-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-8">
           {/* Logo and Navigation Links */}
-          <div className="flex">
+          <div className="flex  ">
             {/* Logo */}
             <div className="flex-shrink-0 flex items-center">
-              <Link to="/" className="flex items-center space-x-1">
-                <img src={logo} alt="Logo" className="h-4 w-auto" />
-                <span className="text-sm font-bold text-neutral-900">URJITA</span>
+              <Link to="/" className="flex items-center space-x-1 w-[80px]">
+                <Logo fill='#fff' />
               </Link>
             </div>
 
             {/* Desktop Navigation */}
-            <div className="hidden sm:ml-4 sm:flex sm:space-x-2">
+            {/* <div className="hidden sm:ml-4 sm:flex sm:space-x-2">
               {navigation.map((item) => (
                 <Link
                   key={item.name}
@@ -55,7 +55,7 @@ const Navbar = () => {
                   {item.name}
                 </Link>
               ))}
-            </div>
+            </div> */}
           </div>
 
           {/* User Profile Dropdown */}
@@ -64,7 +64,7 @@ const Navbar = () => {
               <div className="relative">
                 <button
                   onClick={() => setIsProfileOpen(!isProfileOpen)}
-                  className="flex items-center space-x-1 px-2 py-1 text-xs font-medium text-neutral-700 hover:text-neutral-900 focus:outline-none"
+                  className="flex items-center space-x-1 px-2 py-1 text-xs font-medium text-neutral-100 hover:text-neutral-300 focus:outline-none"
                 >
                   <span>{user.role}</span>
                   <ChevronDown className="h-3 w-3" />

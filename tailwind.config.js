@@ -90,6 +90,7 @@ module.exports = {
       boxShadow: {
         glow: "0 0 8px rgba(255, 255, 255, 0.8), 0 0 16px rgba(59, 130, 246, 0.6)",
         "inner-glow": "inset 0 2px 4px 0 rgba(255, 255, 255, 0.06)",
+        bottom: "0px 2px 7px #2c3b63"
       },
     },
   },

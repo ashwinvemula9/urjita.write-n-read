@@ -525,11 +525,8 @@ const DesignerInterface = () => {
   );
 
   return (
-    <div className="bg-neutral-900 h-full flex flex-col">
-      <div className="flex-grow">
-        <div className="max-w-7xl mx-auto mb-6">
-        </div>
-        
+    
+      <div className="flex-grow  mx-10 mt-5 ">
         <Card className="mx-auto bg-white/95 backdrop-blur-md shadow-xl">
           <h1 className="text-xl font-bold text-black text-center">PCB Design Configuration Interface</h1>
           
@@ -661,10 +658,9 @@ const DesignerInterface = () => {
             </div>
           </div>
         </Card>
+        {submitted && <SuccessModal />}
       </div>
 
-      {submitted && <SuccessModal />}
-    </div>
   );
 };
 

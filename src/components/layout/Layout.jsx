@@ -9,7 +9,7 @@ const Layout = () => {
   const isLoginPage = location.pathname === '/login';
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen  bg-neutral-900 ">
       {!isLoginPage && <Navbar />}
       <ToastContainer 
         position="top-right"
