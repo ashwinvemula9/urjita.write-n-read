@@ -23,7 +23,7 @@ const Layout = () => {
         pauseOnHover
         theme="light"
       />
-      <main className={`${isLoginPage ? 'h-screen' : 'h-[calc(100vh-2rem)]'}`}> {/* 2rem matches navbar height */}
+      <main className={`h-screen`}> {/* 2rem matches navbar height */}
         <Outlet />
       </main>
     </div>
