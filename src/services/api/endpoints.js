@@ -426,7 +426,12 @@ export const verifierAPI = {
 export const ErrorHandler = {
   handle: (error) => {
     if (error.response) {
-      // Server responded with error
+      // Handle 401 Unauthorized error
+      if (error.response.status === 401) {
+        localStorage.removeItem("user");
+        // You might want to redirect to login page or trigger a logout event here
+      }
+
       return {
         status: error.response.status,
         message: error.response.message || "An error occurred",

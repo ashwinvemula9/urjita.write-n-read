@@ -1,13 +1,16 @@
 import React from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import Navbar from './Navbar';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 const Layout = () => {
+  const location = useLocation();
+  const isLoginPage = location.pathname === '/login';
+
   return (
     <div className="min-h-screen">
-      <Navbar />
+      {!isLoginPage && <Navbar />}
       <ToastContainer 
         position="top-right"
         autoClose={3000}
@@ -20,7 +23,7 @@ const Layout = () => {
         pauseOnHover
         theme="light"
       />
-      <main className="h-[calc(100vh-2rem)]"> {/* 2rem matches navbar height */}
+      <main className={`${isLoginPage ? 'h-screen' : 'h-[calc(100vh-2rem)]'}`}> {/* 2rem matches navbar height */}
         <Outlet />
       </main>
     </div>

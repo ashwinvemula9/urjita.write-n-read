@@ -342,7 +342,7 @@ const VerifierInterface = () => {
 
   return (
     <PageLayout>
-      <div className="min-h-[calc(100vh-4rem)] bg-neutral-900 p-8">
+      <div className="min-h-[calc(100vh-4rem)] bg-neutral-900 p-16">
         <div className="bg-white rounded-xl shadow-sm border border-neutral-200 min-h-[calc(100vh-8rem)]">
           {/* Compact Header with integrated step indicator */}
           <div className="px-8 py-3 border-b border-neutral-200">
