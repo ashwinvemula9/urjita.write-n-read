@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext'
-import { Users, UserPlus, UserMinus, Settings, X } from 'lucide-react';
+import { UserPlus, UserMinus, Settings, X } from 'lucide-react';
 import { authAPI } from '../../services/api/endpoints';
 import { toast } from 'react-toastify';
 import { ChevronDown } from 'lucide-react';
@@ -60,7 +60,7 @@ const AddUserForm = ({ onClose }) => {
   };
 console.log(error)
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="">
       <div>
         <label className="block text-sm font-medium text-neutral-700 mb-1">
           Email
@@ -192,7 +192,7 @@ const AdminInterface = () => {
   };
 
   return (
-    <div className="bg-neutral-900 h-full">
+    <div className="bg-neutral-900 min-h-screen pt-14">
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-white mb-2">Admin Dashboard</h1>

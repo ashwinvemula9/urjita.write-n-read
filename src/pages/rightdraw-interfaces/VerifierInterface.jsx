@@ -256,7 +256,7 @@ const VerifierInterface = () => {
 
       case STEPS.VERIFY_RESULTS:
         return (
-          <div className="space-y-6">
+          <div className="space-y-2">
              <FormSection title="Verified Query Data">
         {apiData.verifyResults?.verified_query_data.map((item) => (
           <div
@@ -341,61 +341,60 @@ const VerifierInterface = () => {
   );
 
   return (
-    
-      <div className="min-h-screen bg-neutral-900 p-4 sm:p-8 md:p-16">
-        <div className="bg-white rounded-xl shadow-sm border border-neutral-200 w-full">
-          {/* Compact Header with integrated step indicator */}
-          <div className="px-4 sm:px-6 md:px-8 py-4 md:py-6 border-b border-neutral-200">
-            <div className="max-w-7xl mx-auto w-full">
-              <h1 className="text-lg font-semibold text-neutral-900 mb-4">PCB Verifier Interface</h1>
-              {renderStepIndicator()}
-            </div>
+    <div className="min-h-screen bg-neutral-900 p-4 sm:p-8 md:p-16">
+      <div className="bg-white rounded-xl shadow-sm border border-neutral-200 w-full max-w-7xl mx-auto">
+        {/* Compact Header with integrated step indicator */}
+        <div className="px-4 sm:px-6 md:px-8 py-4 border-b border-neutral-200">
+          <div className="w-full text-center">
+            <h1 className="text-2xl font-semibold text-neutral-900 mb-6">PCB Verifier Interface</h1>
+            {renderStepIndicator()}
           </div>
+        </div>
 
-          {/* Main Content */}
-          <div className="flex-1">
-            <div className="px-4 sm:px-6 md:px-8">
-                {loading.initial ? (
-                  <div className="flex justify-center py-12">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+        {/* Main Content */}
+        <div className="flex-1">
+          <div className="px-4 sm:px-6 md:px-8 py-6">
+            {loading.initial ? (
+              <div className="flex justify-center py-12">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+              </div>
+            ) : (
+              renderStepContent()
+            )}
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="px-4 sm:px-6 md:px-8 py-4 border-t border-neutral-200">
+          <div className="max-w-7xl mx-auto flex justify-between">
+            <Button
+              variant="secondary"
+              onClick={() => setCurrentStep((prev) => prev - 1)}
+              disabled={currentStep === 0}
+            >
+              Previous
+            </Button>
+
+            {currentStep < STEP_ORDER.length - 1 && (
+              <Button
+                variant="primary"
+                onClick={currentStep === STEP_ORDER.length - 2 ? handleSubmit : () => setCurrentStep((prev) => prev + 1)}
+                disabled={loading.submission}
+              >
+                {loading.submission ? (
+                  <div className="flex items-center gap-2">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
+                    <span>Submitting...</span>
                   </div>
                 ) : (
-                  renderStepContent()
+                  currentStep === STEP_ORDER.length - 2 ? "Submit" : "Next"
                 )}
-              </div>
-          </div>
-
-          {/* Footer */}
-          <div className="px-4 sm:px-6 md:px-8 py-4 border-t border-neutral-200 mt-auto">
-            <div className="max-w-7xl mx-auto flex justify-between">
-              <Button
-                variant="secondary"
-                onClick={() => setCurrentStep((prev) => prev - 1)}
-                disabled={currentStep === 0}
-              >
-                Previous
               </Button>
-
-              {currentStep < STEP_ORDER.length - 1 && (
-                <Button
-                  variant="primary"
-                  onClick={currentStep === STEP_ORDER.length - 2 ? handleSubmit : () => setCurrentStep((prev) => prev + 1)}
-                  disabled={loading.submission}
-                >
-                  {loading.submission ? (
-                    <div className="flex items-center gap-2">
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
-                      <span>Submitting...</span>
-                    </div>
-                  ) : (
-                    currentStep === STEP_ORDER.length - 2 ? "Submit" : "Next"
-                  )}
-                </Button>
-              )}
-            </div>
+            )}
           </div>
         </div>
       </div>
+    </div>
   );
 };
 

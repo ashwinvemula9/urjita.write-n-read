@@ -23,7 +23,7 @@ const Layout = () => {
         pauseOnHover
         theme="light"
       />
-      <main className={`h-screen`}> {/* 2rem matches navbar height */}
+      <main > {/* 2rem matches navbar height */}
         <Outlet />
       </main>
     </div>

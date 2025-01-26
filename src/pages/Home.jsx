@@ -36,7 +36,7 @@ const Home = () => {
 
   return user ? (
     <div className="bg-neutral-900 h-full">
-      <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className="max-w-7xl mx-auto px-4 py-8 pt-20">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-white mb-2">
             Welcome back, {user.role}

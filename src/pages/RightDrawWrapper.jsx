@@ -1,6 +1,7 @@
 import React from 'react';
 import VerifierInterface from './rightdraw-interfaces/VerifierInterface';
 import DesignerInterface from './rightdraw-interfaces/DesignerInterface';
+import ApproverInterface from './rightdraw-interfaces/ApproverInterface';
 import AdminInterface from './rightdraw-interfaces/AdminInterface'
 import { useNavigate } from 'react-router-dom';
 const RightDrawWrapper = () => {
@@ -20,7 +21,7 @@ const RightDrawWrapper = () => {
       return <VerifierInterface />;
     case 'Approver':
       // TODO: Create and render ApproverInterface component
-      return <div>Approver Interface Coming Soon</div>;
+      return <ApproverInterface/>;
       case 'Admin':
         // TODO: Create and render ApproverInterface component
         return <AdminInterface/>;

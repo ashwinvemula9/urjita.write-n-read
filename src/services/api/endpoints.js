@@ -1,4 +1,5 @@
 import axios from "axios";
+import { toast } from "react-toastify";
 
 // Configuration
 const BASE_URL = "http://127.0.0.1:8000";
@@ -29,10 +30,23 @@ axiosInstance.interceptors.request.use(
 );
 
 // Response interceptor
-
 axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
+    if (error.response?.status === 401) {
+      // Clear user data
+      localStorage.removeItem("user");
+
+      // Show session expired toast
+      toast.error("Session expired. Please login again.", {});
+
+      // Redirect to login page
+      // Using window.location to ensure complete page refresh
+      window.location.href = "/login";
+
+      return Promise.reject(new Error("Session expired"));
+    }
+
     if (error.response && error.response.status === 403) {
       // Handle CORS error
       console.error("CORS error:", error);
@@ -172,7 +186,7 @@ export const pcbAPI = {
             is_designer: 1,
           }
         : {
-            is_verifier: 1,
+            is_designer: 1,
           };
     try {
       const response = await axiosInstance.get(
@@ -451,5 +465,91 @@ export const ErrorHandler = {
       message: error.message || "Unknown error occurred",
       data: null,
     };
+  },
+};
+
+export const approverAPI = {
+  // Get approver template with query params
+  getApproverTemplate: async (params) => {
+    try {
+      const response = await axiosInstance.get(
+        `/right-draw/approver-template/`,
+        {
+          params: {
+            oppNumber: params.oppNumber,
+            opuNumber: params.opuNumber,
+            eduNumber: params.eduNumber,
+            modelName: params.modelName,
+            partNumber: params.partNumber,
+            revisionNumber: params.revisionNumber,
+            component: params.component,
+          },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      const errorMessage =
+        error.response?.data?.error || "Failed to fetch approver template.";
+
+      console.log({ errorMessage });
+      throw new Error(errorMessage);
+    }
+  },
+
+  // Submit approver decision with updated request body format
+  submitApproverTemplate: async (templateData) => {
+    try {
+      const requestBody = {
+        oppNumber: templateData.oppNumber,
+        opuNumber: templateData.opuNumber,
+        eduNumber: templateData.eduNumber,
+        modelName: templateData.modelName,
+        partNumber: templateData.partNumber,
+        revisionNumber: templateData.revisionNumber,
+        component: templateData.component,
+        componentSpecifications: Object.fromEntries(
+          Object.entries(templateData.componentSpecifications).map(
+            ([key, value]) => [
+              key,
+              {
+                selected_deviation_id: value.selected_deviation_id,
+                status: value.status,
+              },
+            ]
+          )
+        ),
+        approverQueryData: templateData.approverQueryData.map((item) => ({
+          id: item.id,
+          status: item.status,
+        })),
+        status: templateData.status,
+        comments: templateData.comments,
+      };
+
+      const response = await axiosInstance.post(
+        "/right-draw/approver-template/",
+        requestBody
+      );
+
+      // Handle 400 errors specifically
+      if (response.status === 400) {
+        throw new Error(Object.values(response.data).flat().join(", "));
+      }
+
+      return response.data;
+    } catch (error) {
+      // If error response contains validation errors
+      if (error.response?.data && typeof error.response.data === "object") {
+        const errorMessages = Object.entries(error.response.data)
+          .map(([key, messages]) => `${key}: ${messages.join(", ")}`)
+          .join("\n");
+        throw new Error(errorMessages);
+      }
+
+      // Default error message
+      const errorMessage =
+        error.response?.data?.message || "Failed to submit approver template.";
+      throw new Error(errorMessage);
+    }
   },
 };

@@ -216,9 +216,9 @@ const FormSection = ({
   gridClassName = '',
   titleContainerClassName = ''
 }) => (
-  <div className={`space-y-4 ${className}`}>
+  <div className={`  ${className}`}>
     {title && (
-      <div className={`border-b pb-2 ${titleContainerClassName}`}>
+      <div className={`pb-2 ${titleContainerClassName}`}>
         <h3 className={`text-lg font-semibold text-gray-800 ${titleClassName}`}>
           {title}
         </h3>
