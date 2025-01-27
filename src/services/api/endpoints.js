@@ -179,14 +179,14 @@ export const pcbAPI = {
   //   },
   //   ... additional categories
   // ]
-  getSpecification: async (id, designerOrreviewer) => {
+  getSpecification: async (id, designerOrverifier) => {
     const flag =
-      designerOrreviewer === "designer"
+      designerOrverifier === "designer"
         ? {
             is_designer: 1,
           }
         : {
-            is_designer: 1,
+            is_verifier: 1,
           };
     try {
       const response = await axiosInstance.get(

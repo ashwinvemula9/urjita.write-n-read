@@ -10,6 +10,7 @@ import {
 import { pcbAPI, componentsAPI, verifierAPI } from "../../services/api/endpoints";
 import { toast } from "react-toastify";
 import PageLayout from "../../components/layout/PageLayout";
+import generatePDF from "../pdf-creators/PDFDocumentVerifierInterface";
 
 const STEPS = {
   BASIC_INFO: "basicInfo",
@@ -46,6 +47,8 @@ const initialFormState = {
   [STEPS.VERIFY_RESULTS]: {}
 };
 
+const INPUT_FIELD_SPECS = ['Dielectric Thickness', 'B14 Size', 'Dielectric material thickness'];
+
 const VerifierInterface = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [formData, setFormData] = useState(initialFormState);
@@ -63,6 +66,9 @@ const VerifierInterface = () => {
   });
   const [errors, setErrors] = useState({});
   const [hasVerifierFields, setHasVerifierFields] = useState(false);
+
+  console.log("formData", formData)
+  console.log("ApiData", apiData)
 
   const fetchInitialData = useCallback(async () => {
     try {
@@ -120,6 +126,19 @@ const VerifierInterface = () => {
   const handleSubmit = async () => {
     setLoading(prev => ({ ...prev, submission: true }));
     try {
+      // Create a modified version of selectedSpecs where input fields are converted to numbers
+      const processedSpecs = Object.entries(formData[STEPS.PCB_SPECS].selectedSpecs).reduce((acc, [key, value]) => {
+        const spec = apiData.specifications.find(s => s.category_id.toString() === key);
+        if (spec && INPUT_FIELD_SPECS.includes(spec.category_name)) {
+          // Convert input field values to numbers
+          acc[key] = parseFloat(value);
+        } else {
+          // Keep dropdown values as they are
+          acc[key] = value;
+        }
+        return acc;
+      }, {});
+
       const submitData = {
         oppNumber: formData[STEPS.BASIC_INFO].oppNumber,
         opuNumber: formData[STEPS.BASIC_INFO].opuNumber,
@@ -128,7 +147,7 @@ const VerifierInterface = () => {
         partNumber: formData[STEPS.BASIC_INFO].partNumber,
         component: formData[STEPS.BASIC_INFO].component,
         revisionNumber: formData[STEPS.BASIC_INFO].revisionNumber,
-        componentSpecifications: formData[STEPS.PCB_SPECS].selectedSpecs,
+        componentSpecifications: processedSpecs,
         verifierQueryData: formData[STEPS.VERIFIER_FIELDS].verifierQueryData
       };
 
@@ -186,7 +205,7 @@ const VerifierInterface = () => {
             />
             <Select
               label="Component"
-              options={[{ value: 1, label: "B14" }]}
+              options={apiData.components.map((each) => ({ value: each.id, label: each.component_name }))}
               value={formData[STEPS.BASIC_INFO].component}
               onChange={(value) => handleFieldChange(STEPS.BASIC_INFO, "component", value)}
               required
@@ -197,24 +216,50 @@ const VerifierInterface = () => {
       case STEPS.PCB_SPECS:
         return (
           <FormSection title="PCB Specifications">
-            {apiData.specifications.map((spec) => (
-              <Select
-                key={spec.category_id}
-                label={spec.category_name}
-                options={spec.subcategories.map((sub) => ({
-                  value: sub.id,
-                  label: sub.name,
-                }))}
-                value={formData[STEPS.PCB_SPECS].selectedSpecs[spec.category_id] || ""}
-                onChange={(value) =>
-                  handleFieldChange(STEPS.PCB_SPECS, "selectedSpecs", {
-                    ...formData[STEPS.PCB_SPECS].selectedSpecs,
-                    [spec.category_id]: value,
-                  })
-                }
-                required
-              />
-            ))}
+            {/* Render dropdowns first */}
+            {apiData.specifications
+              .filter(spec => !INPUT_FIELD_SPECS.includes(spec.category_name))
+              .map((spec) => (
+                <Select
+                  key={spec.category_id}
+                  label={spec.category_name}
+                  options={spec.subcategories.map((sub) => ({
+                    value: sub.id,
+                    label: sub.name,
+                  }))}
+                  value={formData[STEPS.PCB_SPECS].selectedSpecs[spec.category_id] || ""}
+                  onChange={(value) =>
+                    handleFieldChange(STEPS.PCB_SPECS, "selectedSpecs", {
+                      ...formData[STEPS.PCB_SPECS].selectedSpecs,
+                      [spec.category_id]: value,
+                    })
+                  }
+                  required
+                />
+              ))}
+
+            {/* Render input fields after */}
+            {apiData.specifications
+              .filter(spec => INPUT_FIELD_SPECS.includes(spec.category_name))
+              .map((spec) => (
+                <Input
+                  key={spec.category_id}
+                  label={`${spec.category_name}${spec.category_name === 'Dielectric Thickness' ? ' (inches)' : ''}`}
+                  type="number"
+                  step="0.001"
+                  min="0"
+                  value={formData[STEPS.PCB_SPECS].selectedSpecs[spec.category_id] || ''}
+                  onChange={(value) => {
+                    if (value === '' || !isNaN(value)) {
+                      handleFieldChange(STEPS.PCB_SPECS, "selectedSpecs", {
+                        ...formData[STEPS.PCB_SPECS].selectedSpecs,
+                        [spec.category_id]: value,
+                      });
+                    }
+                  }}
+                  required
+                />
+              ))}
           </FormSection>
         );
 
@@ -256,50 +301,105 @@ const VerifierInterface = () => {
 
       case STEPS.VERIFY_RESULTS:
         return (
-          <div className="space-y-2">
-             <FormSection title="Verified Query Data">
-        {apiData.verifyResults?.verified_query_data.map((item) => (
-          <div
-            key={item.id}
-            className={`flex items-center gap-3 p-3 rounded-lg border ${
-              item.is_deviated ? 'border-red-500' : 'border-green-500'
-            }`}
-          >
-            {item.is_deviated ? (
-              <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
-            ) : (
-              <CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0" />
-            )}
-            <div className="flex-grow">
-              <p className="font-medium">{item.name}</p>
-              <p className="text-sm text-gray-600">Value: {item.value}</p>
+          <div className="space-y-4">
+            <div className="flex justify-end mb-4">
+              <Button
+                variant="secondary"
+                onClick={() => generatePDF(formData, apiData.verifyResults, apiData.specifications)}
+                className="flex items-center gap-2"
+              >
+                <FileText className="w-4 h-4" />
+                Export PDF
+              </Button>
             </div>
-          </div>
-        ))}
-      </FormSection>
 
-      <FormSection title="Verify Design Fields">
-        {apiData.verifyResults?.verify_design_fields_data.map((item) => (
-          <div
-            key={item.categor_id}
-            className={`flex items-center gap-3 p-3 rounded-lg border ${
-              item.is_deviated ? 'border-red-500' : 'border-green-500'
-            }`}
-          >
-            {item.is_deviated ? (
-              <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
-            ) : (
-              <CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0" />
-            )}
-            <div className="flex-grow">
-              <p className="font-medium">{item.name}</p>
-              <p className="text-sm text-gray-600">
-                Selected: {item.selected_deviation_name}
-              </p>
-            </div>
-          </div>
-        ))}
-      </FormSection>
+            <FormSection title="Verified Query Data">
+              {/* Deviated Values */}
+              {apiData.verifyResults?.verified_query_data.some(item => item.is_deviated) && (
+                <div className="mb-4">
+                  <h3 className="text-lg font-semibold text-red-600 mb-2">Deviated Values</h3>
+                  {apiData.verifyResults?.verified_query_data
+                    .filter(item => item.is_deviated)
+                    .map((item) => (
+                      <div
+                        key={item.id}
+                        className="flex items-center gap-3 p-3 rounded-lg border border-red-500 mb-2"
+                      >
+                        <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
+                        <div className="flex-grow">
+                          <p className="font-medium">{item.name}</p>
+                          <p className="text-sm text-gray-600">Value: {item.value}</p>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              )}
+
+              {/* Compliant Values */}
+              {apiData.verifyResults?.verified_query_data.some(item => !item.is_deviated) && (
+                <div>
+                  <h3 className="text-lg font-semibold text-green-600 mb-2">Compliant Values</h3>
+                  {apiData.verifyResults?.verified_query_data
+                    .filter(item => !item.is_deviated)
+                    .map((item) => (
+                      <div
+                        key={item.id}
+                        className="flex items-center gap-3 p-3 rounded-lg border border-green-500 mb-2"
+                      >
+                        <CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0" />
+                        <div className="flex-grow">
+                          <p className="font-medium">{item.name}</p>
+                          <p className="text-sm text-gray-600">Value: {item.value}</p>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              )}
+            </FormSection>
+
+            <FormSection title="Verify Design Fields">
+              {/* Deviated Design Fields */}
+              {apiData.verifyResults?.verify_design_fields_data.some(item => item.is_deviated) && (
+                <div className="mb-4">
+                  <h3 className="text-lg font-semibold text-red-600 mb-2">Deviated Design Fields</h3>
+                  {apiData.verifyResults?.verify_design_fields_data
+                    .filter(item => item.is_deviated)
+                    .map((item) => (
+                      <div
+                        key={item.categor_id}
+                        className="flex items-center gap-3 p-3 rounded-lg border border-red-500 mb-2"
+                      >
+                        <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
+                        <div className="flex-grow">
+                          <p className="font-medium">{item.name}</p>
+                          <p className="text-sm text-gray-600">Selected: {item.selected_deviation_name}</p>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              )}
+
+              {/* Compliant Design Fields */}
+              {apiData.verifyResults?.verify_design_fields_data.some(item => !item.is_deviated) && (
+                <div>
+                  <h3 className="text-lg font-semibold text-green-600 mb-2">Compliant Design Fields</h3>
+                  {apiData.verifyResults?.verify_design_fields_data
+                    .filter(item => !item.is_deviated)
+                    .map((item) => (
+                      <div
+                        key={item.categor_id}
+                        className="flex items-center gap-3 p-3 rounded-lg border border-green-500 mb-2"
+                      >
+                        <CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0" />
+                        <div className="flex-grow">
+                          <p className="font-medium">{item.name}</p>
+                          <p className="text-sm text-gray-600">Selected: {item.selected_deviation_name}</p>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              )}
+            </FormSection>
           </div>
         );
 
