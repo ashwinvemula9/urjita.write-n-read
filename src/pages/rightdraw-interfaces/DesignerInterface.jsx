@@ -58,168 +58,47 @@ const initialApiDataState = {
   designRules: [],
 };
 
-// Update the copper rules constant
-const COPPER_RULES = {
-  '0.5': {
-    baseThickness: 1,
-    requiredFinish: 'LPKF',
-    calculateThickness: (multilayerThickness, prepregThickness) => {
-      // If no multilayer thickness, return base thickness
-      if (!multilayerThickness || multilayerThickness === '0') {
-        return {
-          thickness: 1,
-          message: 'Final PCB thickness should be 1 oZ'
-        };
+// Add this helper function at the top level
+const getErrorMessage = (specs) => {
+  const copperThickness = specs[6];  // adjust ID as needed
+  const finish = specs[5];  // adjust ID as needed
+  const secondDielectricThickness = specs[7];  // adjust ID as needed
+
+  if (copperThickness === '76') {
+    if (finish && finish !== '75') {
+      //no dropdown option with 0 value for second dielectric thickness
+      if (secondDielectricThickness === '0') {
+        return "Final PCB thickness should be 1 oZ";
+      } else if (secondDielectricThickness) {
+        return "Final PCB thickness should be 1 oZ + Multilayer thickness + Prepreg thickness as required.";
       }
-      // Calculate total thickness with multilayer and prepreg
-      const total = 1 + parseFloat(multilayerThickness) + (parseFloat(prepregThickness) || 0);
-      return {
-        thickness: total,
-        message: `Final PCB thickness will be ${total} oZ (1 oZ + Multilayer ${multilayerThickness} + Prepreg ${prepregThickness || 0})`
-      };
     }
-  },
-  '1': {
-    baseThickness: 1.5,
-    requiredFinish: 'LPKF',
-    calculateThickness: (multilayerThickness, prepregThickness) => {
-      // If no multilayer thickness, return base thickness
-      if (!multilayerThickness || multilayerThickness === '0') {
-        return {
-          thickness: 1.5,
-          message: 'Final PCB thickness should be 1.5 oZ'
-        };
+  } else if (copperThickness === '77') {
+    if (finish && finish !== '75') {
+      //no dropdown option with 0 value for second dielectric thickness
+      if (secondDielectricThickness === '0') {
+        return "Final PCB thickness should be 1.5 oZ";
+      } else if (secondDielectricThickness) {
+        return "Final PCB thickness should be 1.5 oZ + Multilayer thickness + Prepreg thickness as required.";
       }
-      // Calculate total thickness with multilayer and prepreg
-      const total = 1.5 + parseFloat(multilayerThickness) + (parseFloat(prepregThickness) || 0);
-      return {
-        thickness: total,
-        message: `Final PCB thickness will be ${total} oZ (1.5 oZ + Multilayer ${multilayerThickness} + Prepreg ${prepregThickness || 0})`
-      };
     }
   }
+  return null;
 };
 
-// Update the validation function
-const validateCopperThicknessRules = (specs, selectedSpecs) => {
-  if (!selectedSpecs || Object.keys(selectedSpecs).length === 0) {
-    return { isValid: true, message: '' };
-  }
-
-  // Find relevant categories
-  const copperThicknessCategory = specs.find(spec => spec.category_name === 'Copper Thickness');
-  const finishCategory = specs.find(spec => spec.category_name === 'B14 Finish');
-  const multilayerCategory = specs.find(spec => 
-    spec.category_name.toLowerCase().includes('multilayer')
-  );
-  const prepregCategory = specs.find(spec => 
-    spec.category_name.toLowerCase().includes('prepreg')
-  );
-
-  if (!copperThicknessCategory || !finishCategory) {
-    return { isValid: true, message: '' };
-  }
-
-  // Get selected values
-  const selectedCopperThicknessId = selectedSpecs[copperThicknessCategory.category_id];
-  const selectedFinishId = selectedSpecs[finishCategory.category_id];
-  const selectedMultilayerId = selectedSpecs[multilayerCategory?.category_id];
-  const selectedPrepregId = selectedSpecs[prepregCategory?.category_id];
-
-  // Get actual values from subcategories
-  const copperValue = copperThicknessCategory.subcategories.find(
-    sub => sub.id === selectedCopperThicknessId
-  )?.name;
-  const finishValue = finishCategory.subcategories.find(
-    sub => sub.id === selectedFinishId
-  )?.name;
-  const multilayerValue = multilayerCategory?.subcategories.find(
-    sub => sub.id === selectedMultilayerId
-  )?.name;
-  const prepregValue = prepregCategory?.subcategories.find(
-    sub => sub.id === selectedPrepregId
-  )?.name;
-
-  // If copper thickness is selected
-  if (copperValue && COPPER_RULES[copperValue]) {
-    const rules = COPPER_RULES[copperValue];
-
-    // Check B14 finish requirement
-    if (finishValue && finishValue !== rules.requiredFinish) {
-      return {
-        isValid: false,
-        message: `Only ${rules.requiredFinish} finish is allowed when copper thickness is ${copperValue} oZ`,
-        requiresFinish: rules.requiredFinish
-      };
-    }
-
-    // Calculate thickness based on multilayer and prepreg
-    const thicknessResult = rules.calculateThickness(multilayerValue, prepregValue);
-
-    return {
-      isValid: true,
-      ...thicknessResult,
-      requiresFinish: rules.requiredFinish
-    };
-  }
-
-  return { isValid: true, message: '' };
-};
-
-// Update PCBSpecifications component to handle the new validation
+// Simplify the PCBSpecifications component
 const PCBSpecifications = ({ formData, apiData, handleFieldChange }) => {
-  const [validationMessage, setValidationMessage] = useState('');
-  const [disabledOptions, setDisabledOptions] = useState({});
-
-  useEffect(() => {
-    const validation = validateCopperThicknessRules(
-      apiData.specifications, 
-      formData[STEPS.PCB_SPECS].selectedSpecs
-    );
-
-    setValidationMessage(validation.message);
-
-    // Update disabled options based on validation
-    if (validation.requiresFinish) {
-      const finishCategory = apiData.specifications.find(spec => 
-        spec.category_name === 'B14 Finish'
-      );
-      if (finishCategory) {
-        setDisabledOptions(prev => ({
-          ...prev,
-          [finishCategory.category_id]: finishCategory.subcategories
-            .filter(sub => sub.name !== validation.requiresFinish)
-            .map(sub => sub.id)
-        }));
-      }
-    } else {
-      setDisabledOptions({});
-    }
-  }, [formData[STEPS.PCB_SPECS].selectedSpecs, apiData.specifications]);
-
-  const getValidationClass = (message) => {
-    if (!message) return '';
-    return message.includes('must be selected') 
-      ? 'bg-red-50 border-red-200 text-red-700'
-      : 'bg-blue-50 border-blue-200 text-blue-700';
-  };
+  const errorMessage = getErrorMessage(formData[STEPS.PCB_SPECS].selectedSpecs);
 
   return (
     <FormSection title="PCB Specifications">
-      {validationMessage && (
-        <div className={`mb-4 p-3 border rounded-md ${getValidationClass(validationMessage)}`}>
-          {validationMessage}
-        </div>
-      )}
-
       {apiData.specifications.map((spec) => (
         <Select
           key={spec.category_id}
           label={spec.category_name}
           options={spec.subcategories.map((sub) => ({
             value: sub.id,
-            label: sub.name,
-            disabled: disabledOptions[spec.category_id]?.includes(sub.id)
+            label: sub.name
           }))}
           value={formData[STEPS.PCB_SPECS].selectedSpecs[spec.category_id] || ""}
           onChange={(value) => {
@@ -229,10 +108,15 @@ const PCBSpecifications = ({ formData, apiData, handleFieldChange }) => {
             });
           }}
           required={spec.category_name !== 'Second Dielectric Thickness'}
-          isDisabled={disabledOptions[spec.category_id]?.length > 0 && 
-                     !formData[STEPS.PCB_SPECS].selectedSpecs[spec.category_id]}
         />
       ))}
+      
+      {/* Error message display */}
+      {errorMessage && (
+        <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-md">
+          <p className="text-red-600 text-sm">{errorMessage}</p>
+        </div>
+      )}
     </FormSection>
   );
 };
@@ -273,9 +157,6 @@ const DesignerInterface = () => {
       }
     }
   }, []);
-  console.log("formData", formData)
-  console.log("ApiData", apiData)
-
 
   // Fetch Initial Data
   const fetchInitialData = useCallback(async () => {
@@ -292,20 +173,12 @@ const DesignerInterface = () => {
         throw new Error("Failed to load initial data");
       }
 
-
       setApiData(prev => ({
         ...prev,
         specifications: specs,
         components,
       }));
 
-
-      // uncomment this after the real data comes 
-      // setApiData(prev => ({
-      //   ...prev,
-      //   specifications: specs,
-      //   components,
-      // }));
     } catch (err) {
       setErrors(prev => ({
         ...prev,
@@ -318,14 +191,15 @@ const DesignerInterface = () => {
 
   const fetchDesignOptions = async () => {
     try {
-    const response = await rulesAPI.getDesignOptions()
-    setApiData(prev => ({ ...prev, designOptions: response }));
-     }
-    catch(err) {
-      toast.error("Something went wrong, please try again later")
-      console.log(err)
-}
-  }
+      const response = await rulesAPI.getDesignOptions()
+      setApiData(prev => ({
+        ...prev,
+        designOptions: response,
+      }));
+    } catch (error) {
+      console.error("Error fetching design options:", error);
+    }
+  };
 
   // Fetch Design Rules
   const fetchDesignRules = useCallback(async () => {
@@ -380,19 +254,14 @@ const DesignerInterface = () => {
     [STEPS.PCB_SPECS]: (data) => {
       if (!apiData.specifications.length) return false;
       
-      // Check if all required fields are selected
-      const requiredCategories = apiData.specifications.filter(spec => 
-        spec.category_name !== 'Second Dielectric Thickness' // This seems to be optional based on the UI
+      // Check if all required specifications are selected
+      const requiredSpecs = apiData.specifications.filter(spec => 
+        spec.category_name !== 'Second Dielectric Thickness'
       );
       
-      const allRequiredSelected = requiredCategories.every(spec => 
+      return requiredSpecs.every(spec => 
         data.selectedSpecs[spec.category_id] !== undefined
       );
-      
-      // Validate copper thickness rules
-      const copperValidation = validateCopperThicknessRules(apiData.specifications, data.selectedSpecs);
-      
-      return allRequiredSelected && copperValidation.isValid;
     },
     [STEPS.DESIGN_RULES]: (data) => {
       const hasSelectedOptions = Object.values(data.selectedCheckboxes).some(Boolean);
@@ -443,7 +312,8 @@ const DesignerInterface = () => {
       }
   };
   
-
+  console.log({ formData })
+  console.log({apiData})
 
   const handleSubmit = async () => {
     setLoadingStates(prev => ({ ...prev, submission: true }));
