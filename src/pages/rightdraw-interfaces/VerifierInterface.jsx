@@ -47,7 +47,7 @@ const initialFormState = {
   [STEPS.VERIFY_RESULTS]: {}
 };
 
-const INPUT_FIELD_SPECS = ['Dielectric Thickness', 'B14 Size', 'Dielectric material thickness'];
+const INPUT_FIELD_SPECS = ['Dielectric Thickness', 'B14 Size'];
 
 const VerifierInterface = () => {
   const [currentStep, setCurrentStep] = useState(0);
