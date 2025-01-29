@@ -1,9 +1,9 @@
-import React from 'react';
-import VerifierInterface from './rightdraw-interfaces/VerifierInterface';
-import DesignerInterface from './rightdraw-interfaces/DesignerInterface';
-import ApproverInterface from './rightdraw-interfaces/ApproverInterface';
-import AdminInterface from './rightdraw-interfaces/AdminInterface'
-import { useNavigate } from 'react-router-dom';
+import React from "react";
+import VerifierInterface from "./rightdraw-interfaces/VerifierInterface";
+import DesignerInterface from "./rightdraw-interfaces/DesignerInterface";
+import ApproverInterface from "./rightdraw-interfaces/ApproverInterface";
+import AdminInterface from "./rightdraw-interfaces/AdminInterface";
+import { useNavigate } from "react-router-dom";
 
 const RightDrawWrapper = () => {
   const navigate = useNavigate();
@@ -25,13 +25,13 @@ const RightDrawWrapper = () => {
   console.log("Current user role:", user.role);
 
   switch (user.role[0]) {
-    case 'CADesigner':
+    case "CADesigner":
       return <DesignerInterface />;
-    case 'Verifier':
+    case "Verifier":
       return <VerifierInterface />;
-    case 'Approver':
+    case "Approver":
       return <ApproverInterface />;
-    case 'Admin':
+    case "Admin":
       return <AdminInterface />;
     default:
       return <div>Access Denied: Invalid Role</div>;

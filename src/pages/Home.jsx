@@ -12,7 +12,7 @@ const Home = () => {
   if (!user) {
     navigate("/login");
   }
-  console.log("in homepage", user)
+  console.log("in homepage", user);
   let description = "";
   if (user.role === "CADesigner") {
     description = "Design and manage components.";

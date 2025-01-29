@@ -1,11 +1,13 @@
-import React, { useState } from 'react';
-import { toast } from 'react-toastify';
-import { 
-  AlertCircle, 
-  CheckCircle2, 
+import React, { useState } from "react";
+import { toast } from "react-toastify";
+import {
+  AlertCircle,
+  CheckCircle2,
   XCircle,
-} from 'lucide-react';
-import { approverAPI } from '../../services/api/endpoints';
+  FileText,
+  Home,
+} from "lucide-react";
+import { approverAPI } from "../../services/api/endpoints";
 import {
   Button,
   Card,
@@ -14,7 +16,8 @@ import {
   Select,
 } from "../../components/common/ReusableComponents";
 import Modal from "../../components/common/Modal";
-import PageLayout from '../../components/layout/PageLayout';
+import PageLayout from "../../components/layout/PageLayout";
+import generatePDF from "../../pages/pdf-creators/PDFDocumentApproverInterface";
 
 const buttonVariants = {
   success: `
@@ -43,7 +46,14 @@ const buttonVariants = {
   `,
 };
 
-const UpdatedSelect = ({ label, value, onChange, required, options, className = "" }) => (
+const UpdatedSelect = ({
+  label,
+  value,
+  onChange,
+  required,
+  options,
+  className = "",
+}) => (
   <div className={`flex flex-col space-y-2 ${className}`}>
     <label className="text-sm font-medium text-neutral-700 flex items-center">
       {label}
@@ -70,8 +80,18 @@ const UpdatedSelect = ({ label, value, onChange, required, options, className = 
         ))}
       </select>
       <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-        <svg className="w-5 h-5 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+        <svg
+          className="w-5 h-5 text-neutral-400"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            d="M19 9l-7 7-7-7"
+          />
         </svg>
       </div>
     </div>
@@ -80,12 +100,12 @@ const UpdatedSelect = ({ label, value, onChange, required, options, className = 
 
 const ApproverInterface = () => {
   const [formData, setFormData] = useState({
-    oppNumber: '',
-    opuNumber: '',
-    eduNumber: '',
-    modelName: '',
-    partNumber: '',
-    revisionNumber: '',
+    oppNumber: "",
+    opuNumber: "",
+    eduNumber: "",
+    modelName: "",
+    partNumber: "",
+    revisionNumber: "",
     component: 1,
   });
 
@@ -96,24 +116,34 @@ const ApproverInterface = () => {
     verifiedQueryData: {},
   });
   const [showApprovalModal, setShowApprovalModal] = useState(false);
-  const [approvalComment, setApprovalComment] = useState('');
+  const [approvalComment, setApprovalComment] = useState("");
   const [showRejectionModal, setShowRejectionModal] = useState(false);
-  const [rejectionComment, setRejectionComment] = useState('');
+  const [rejectionComment, setRejectionComment] = useState("");
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [actionType, setActionType] = useState("");
 
   const handleInputChange = (field, value) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   };
 
   const handleFetchTemplate = async () => {
     // Validate all required fields
-    const requiredFields = ['oppNumber', 'opuNumber', 'modelName', 'partNumber', 'revisionNumber'];
-    const missingFields = requiredFields.filter(field => !formData[field]);
-    
+    const requiredFields = [
+      "oppNumber",
+      "opuNumber",
+      "modelName",
+      "partNumber",
+      "revisionNumber",
+    ];
+    const missingFields = requiredFields.filter((field) => !formData[field]);
+
     if (missingFields.length > 0) {
-      toast.error(`Please fill in all required fields: ${missingFields.join(', ')}`);
+      toast.error(
+        `Please fill in all required fields: ${missingFields.join(", ")}`
+      );
       return;
     }
 
@@ -128,25 +158,30 @@ const ApproverInterface = () => {
     }
   };
 
-  const handleStatusChange = (type, id, status) => {
-    setApprovalStatus(prev => ({
+  const handleStatusChange = (type, id) => {
+    setApprovalStatus((prev) => ({
       ...prev,
       [type]: {
         ...prev[type],
-        [id]: status
-      }
+        [id]: !prev[type][id], // Toggle checkbox state
+      },
     }));
   };
 
   const isAllDeviationsApproved = () => {
-    const deviatedDesignFields = templateData?.verify_design_fields_data.filter(field => field.is_deviated) || [];
-    const deviatedQueryData = templateData?.verified_query_data.filter(field => field.is_deviated) || [];
-    
+    const deviatedDesignFields =
+      templateData?.verify_design_fields_data.filter(
+        (field) => field.is_deviated
+      ) || [];
+    const deviatedQueryData =
+      templateData?.verified_query_data.filter((field) => field.is_deviated) ||
+      [];
+
     const allDesignFieldsApproved = deviatedDesignFields.every(
-      field => approvalStatus.verifyDesignFields[field.categor_id] === 'Approved'
+      (field) => approvalStatus.verifyDesignFields[field.categor_id]
     );
     const allQueryDataApproved = deviatedQueryData.every(
-      field => approvalStatus.verifiedQueryData[field.id] === 'Approved'
+      (field) => approvalStatus.verifiedQueryData[field.id]
     );
 
     return allDesignFieldsApproved && allQueryDataApproved;
@@ -159,34 +194,34 @@ const ApproverInterface = () => {
         ...formData,
         componentSpecifications: Object.fromEntries(
           templateData.verify_design_fields_data
-            .filter(field => field.is_deviated)
-            .map(field => [
+            .filter((field) => field.is_deviated)
+            .map((field) => [
               field.categor_id,
               {
                 selected_deviation_id: field.selected_deviation_id,
-                status: approvalStatus.verifyDesignFields[field.categor_id]
-              }
+                status: approvalStatus.verifyDesignFields[field.categor_id],
+              },
             ])
         ),
         approverQueryData: templateData.verified_query_data
-          .filter(field => field.is_deviated)
-          .map(field => ({
+          .filter((field) => field.is_deviated)
+          .map((field) => ({
             id: field.id,
-            status: approvalStatus.verifiedQueryData[field.id]
+            status: approvalStatus.verifiedQueryData[field.id],
           })),
-        status: 'Approved',
-        comments: approvalComment
+        status: "Approved",
+        comments: approvalComment,
       };
 
       await approverAPI.submitApproverTemplate(submitData);
-      toast.success('Template approved successfully!');
-      setTemplateData(null);
+      setActionType("approved");
+      setShowSuccessModal(true);
       setApprovalStatus({ verifyDesignFields: {}, verifiedQueryData: {} });
       setShowApprovalModal(false);
     } catch (error) {
       if (error.response?.data) {
-        Object.values(error.response.data).forEach(messages => {
-          messages.forEach(message => toast.error(message));
+        Object.values(error.response.data).forEach((messages) => {
+          messages.forEach((message) => toast.error(message));
         });
       } else {
         toast.error(error.message);
@@ -200,19 +235,19 @@ const ApproverInterface = () => {
     // First, set all deviated fields to Rejected
     const updatedApprovalStatus = {
       verifyDesignFields: {},
-      verifiedQueryData: {}
+      verifiedQueryData: {},
     };
 
     templateData.verify_design_fields_data
-      .filter(field => field.is_deviated)
-      .forEach(field => {
-        updatedApprovalStatus.verifyDesignFields[field.categor_id] = 'Rejected';
+      .filter((field) => field.is_deviated)
+      .forEach((field) => {
+        updatedApprovalStatus.verifyDesignFields[field.categor_id] = "Rejected";
       });
 
     templateData.verified_query_data
-      .filter(field => field.is_deviated)
-      .forEach(field => {
-        updatedApprovalStatus.verifiedQueryData[field.id] = 'Rejected';
+      .filter((field) => field.is_deviated)
+      .forEach((field) => {
+        updatedApprovalStatus.verifiedQueryData[field.id] = "Rejected";
       });
 
     setApprovalStatus(updatedApprovalStatus);
@@ -226,35 +261,35 @@ const ApproverInterface = () => {
         ...formData,
         componentSpecifications: Object.fromEntries(
           templateData.verify_design_fields_data
-            .filter(field => field.is_deviated)
-            .map(field => [
+            .filter((field) => field.is_deviated)
+            .map((field) => [
               field.categor_id,
               {
                 selected_deviation_id: field.selected_deviation_id,
-                status: approvalStatus.verifyDesignFields[field.categor_id]
-              }
+                status: approvalStatus.verifyDesignFields[field.categor_id],
+              },
             ])
         ),
         approverQueryData: templateData.verified_query_data
-          .filter(field => field.is_deviated)
-          .map(field => ({
+          .filter((field) => field.is_deviated)
+          .map((field) => ({
             id: field.id,
-            status: approvalStatus.verifiedQueryData[field.id]
+            status: approvalStatus.verifiedQueryData[field.id],
           })),
-        status: 'Rejected',
-        comments: rejectionComment
+        status: "Rejected",
+        comments: rejectionComment,
       };
 
       await approverAPI.submitApproverTemplate(submitData);
-      toast.success('Template rejected successfully!');
-      setTemplateData(null);
+      setActionType("rejected");
+      setShowSuccessModal(true);
       setApprovalStatus({ verifyDesignFields: {}, verifiedQueryData: {} });
       setShowRejectionModal(false);
-      setRejectionComment('');
+      setRejectionComment("");
     } catch (error) {
       if (error.response?.data) {
-        Object.values(error.response.data).forEach(messages => {
-          messages.forEach(message => toast.error(message));
+        Object.values(error.response.data).forEach((messages) => {
+          messages.forEach((message) => toast.error(message));
         });
       } else {
         toast.error(error.message);
@@ -264,6 +299,20 @@ const ApproverInterface = () => {
     }
   };
 
+  const handleExportPDF = () => {
+    const pdfData = {
+      ...formData,
+      approvalComment: approvalComment,
+      rejectionComment: rejectionComment,
+    };
+
+    const user = JSON.parse(localStorage.getItem("user"));
+    generatePDF(pdfData, templateData, actionType, user?.email);
+
+    // Reset states after PDF generation
+    // Reset other states as needed
+  };
+  console.log("templateData", templateData);
   return (
     <div className="min-h-screen bg-neutral-900 p-4 sm:p-8 md:p-16">
       <div className="bg-white rounded-xl shadow-sm border border-neutral-200 w-full max-w-7xl mx-auto">
@@ -282,20 +331,26 @@ const ApproverInterface = () => {
                     <Input
                       label="OPP Number"
                       value={formData.oppNumber}
-                      onChange={(value) => handleInputChange('oppNumber', value)}
+                      onChange={(value) =>
+                        handleInputChange("oppNumber", value)
+                      }
                       required
                       placeholder="Enter OPP Number"
                     />
                     <Input
                       label="EDU Number"
                       value={formData.eduNumber}
-                      onChange={(value) => handleInputChange('eduNumber', value)}
+                      onChange={(value) =>
+                        handleInputChange("eduNumber", value)
+                      }
                       placeholder="Enter EDU Number"
                     />
                     <Input
                       label="Part Number"
                       value={formData.partNumber}
-                      onChange={(value) => handleInputChange('partNumber', value)}
+                      onChange={(value) =>
+                        handleInputChange("partNumber", value)
+                      }
                       required
                       placeholder="Enter Part Number"
                     />
@@ -304,21 +359,27 @@ const ApproverInterface = () => {
                     <Input
                       label="OPU Number"
                       value={formData.opuNumber}
-                      onChange={(value) => handleInputChange('opuNumber', value)}
+                      onChange={(value) =>
+                        handleInputChange("opuNumber", value)
+                      }
                       required
                       placeholder="Enter OPU Number"
                     />
                     <Input
                       label="Model Name"
                       value={formData.modelName}
-                      onChange={(value) => handleInputChange('modelName', value)}
+                      onChange={(value) =>
+                        handleInputChange("modelName", value)
+                      }
                       required
                       placeholder="Enter Model Name"
                     />
                     <Input
                       label="Revision Number"
                       value={formData.revisionNumber}
-                      onChange={(value) => handleInputChange('revisionNumber', value)}
+                      onChange={(value) =>
+                        handleInputChange("revisionNumber", value)
+                      }
                       required
                       placeholder="Enter Revision Number"
                     />
@@ -329,9 +390,9 @@ const ApproverInterface = () => {
                   <UpdatedSelect
                     label="Component"
                     value={formData.component}
-                    onChange={(value) => handleInputChange('component', value)}
+                    onChange={(value) => handleInputChange("component", value)}
                     required
-                    options={[{ value: 1, label: 'B14' }]}
+                    options={[{ value: 1, label: "B14" }]}
                     className="w-full md:w-1/2"
                   />
                 </div>
@@ -350,7 +411,7 @@ const ApproverInterface = () => {
                         <span>Fetching Template...</span>
                       </>
                     ) : (
-                      'Fetch Template'
+                      "Fetch Template"
                     )}
                   </Button>
                 </div>
@@ -364,44 +425,52 @@ const ApproverInterface = () => {
                     <AlertCircle className="w-6 h-6" />
                     Deviated Fields
                   </h2>
-                  
-                  {templateData.verify_design_fields_data.some(field => field.is_deviated) && (
+
+                  {templateData.verify_design_fields_data.some(
+                    (field) => field.is_deviated
+                  ) && (
                     <div className="mb-6">
-                      <h3 className="text-lg font-medium text-gray-900 mb-3">Design Fields</h3>
+                      <h3 className="text-lg font-medium text-gray-900 mb-3">
+                        Design Fields
+                      </h3>
                       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                         {templateData.verify_design_fields_data
-                          .filter(field => field.is_deviated)
-                          .map(field => (
-                            <div key={field.categor_id} className="bg-white rounded-lg border border-red-200 p-4">
-                              <div className="flex flex-col h-full">
+                          .filter((field) => field.is_deviated)
+                          .map((field) => (
+                            <div
+                              key={field.categor_id}
+                              className="bg-white rounded-lg border border-red-200 p-4"
+                            >
+                              <div className="flex items-center justify-between">
                                 <div className="flex-grow">
-                                  <h4 className="font-medium text-gray-900">{field.name}</h4>
+                                  <h4 className="font-medium text-gray-900">
+                                    {field.name}
+                                  </h4>
                                   <p className="text-sm text-gray-600 mt-1">
-                                    Selected Value: {field.selected_deviation_name}
+                                    Selected Value:{" "}
+                                    {field.selected_deviation_name}
                                   </p>
                                 </div>
-                                <div className="flex gap-2 mt-4">
-                                  <button
-                                    onClick={() => handleStatusChange('verifyDesignFields', field.categor_id, 'Approved')}
-                                    className={`flex-1 flex items-center justify-center py-2 rounded-lg font-medium transition-all duration-200 ${
-                                      approvalStatus.verifyDesignFields[field.categor_id] === 'Approved'
-                                        ? 'bg-green-600 text-white hover:bg-green-700'
-                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                    }`}
-                                  >
+                                <label className="flex items-center space-x-2">
+                                  <input
+                                    type="checkbox"
+                                    checked={
+                                      !!approvalStatus.verifyDesignFields[
+                                        field.categor_id
+                                      ]
+                                    }
+                                    onChange={() =>
+                                      handleStatusChange(
+                                        "verifyDesignFields",
+                                        field.categor_id
+                                      )
+                                    }
+                                    className="w-5 h-5 rounded text-green-600 focus:ring-green-500"
+                                  />
+                                  <span className="text-sm font-medium text-gray-700">
                                     Approve
-                                  </button>
-                                  <button
-                                    onClick={() => handleStatusChange('verifyDesignFields', field.categor_id, 'Rejected')}
-                                    className={`flex-1 flex items-center justify-center py-2 rounded-lg font-medium transition-all duration-200 ${
-                                      approvalStatus.verifyDesignFields[field.categor_id] === 'Rejected'
-                                        ? 'bg-red-600 text-white hover:bg-red-700'
-                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                    }`}
-                                  >
-                                    Reject
-                                  </button>
-                                </div>
+                                  </span>
+                                </label>
                               </div>
                             </div>
                           ))}
@@ -409,43 +478,50 @@ const ApproverInterface = () => {
                     </div>
                   )}
 
-                  {templateData.verified_query_data.some(field => field.is_deviated) && (
+                  {templateData.verified_query_data.some(
+                    (field) => field.is_deviated
+                  ) && (
                     <div>
-                      <h3 className="text-lg font-medium text-gray-900 mb-3">Query Data</h3>
+                      <h3 className="text-lg font-medium text-gray-900 mb-3">
+                        Query Data
+                      </h3>
                       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                         {templateData.verified_query_data
-                          .filter(field => field.is_deviated)
-                          .map(field => (
-                            <div key={field.id} className="bg-white rounded-lg border border-red-200 p-4">
-                              <div className="flex flex-col h-full">
+                          .filter((field) => field.is_deviated)
+                          .map((field) => (
+                            <div
+                              key={field.id}
+                              className="bg-white rounded-lg border border-red-200 p-4"
+                            >
+                              <div className="flex items-center justify-between">
                                 <div className="flex-grow">
-                                  <h4 className="font-medium text-gray-900">{field.name}</h4>
+                                  <h4 className="font-medium text-gray-900">
+                                    {field.name}
+                                  </h4>
                                   <p className="text-sm text-gray-600 mt-1">
                                     Value: {field.value}
                                   </p>
                                 </div>
-                                <div className="flex gap-2 mt-4">
-                                  <button
-                                    onClick={() => handleStatusChange('verifiedQueryData', field.id, 'Approved')}
-                                    className={`flex-1 flex items-center justify-center py-2 rounded-lg font-medium transition-all duration-200 ${
-                                      approvalStatus.verifiedQueryData[field.id] === 'Approved'
-                                        ? 'bg-green-600 text-white hover:bg-green-700'
-                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                    }`}
-                                  >
+                                <label className="flex items-center space-x-2">
+                                  <input
+                                    type="checkbox"
+                                    checked={
+                                      !!approvalStatus.verifiedQueryData[
+                                        field.id
+                                      ]
+                                    }
+                                    onChange={() =>
+                                      handleStatusChange(
+                                        "verifiedQueryData",
+                                        field.id
+                                      )
+                                    }
+                                    className="w-5 h-5 rounded text-green-600 focus:ring-green-500"
+                                  />
+                                  <span className="text-sm font-medium text-gray-700">
                                     Approve
-                                  </button>
-                                  <button
-                                    onClick={() => handleStatusChange('verifiedQueryData', field.id, 'Rejected')}
-                                    className={`flex-1 flex items-center justify-center py-2 rounded-lg font-medium transition-all duration-200 ${
-                                      approvalStatus.verifiedQueryData[field.id] === 'Rejected'
-                                        ? 'bg-red-600 text-white hover:bg-red-700'
-                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                    }`}
-                                  >
-                                    Reject
-                                  </button>
-                                </div>
+                                  </span>
+                                </label>
                               </div>
                             </div>
                           ))}
@@ -460,15 +536,24 @@ const ApproverInterface = () => {
                     Compliant Fields
                   </h2>
 
-                  {templateData.verify_design_fields_data.some(field => !field.is_deviated) && (
+                  {templateData.verify_design_fields_data.some(
+                    (field) => !field.is_deviated
+                  ) && (
                     <div className="mb-6">
-                      <h3 className="text-lg font-medium text-gray-900 mb-3">Design Fields</h3>
+                      <h3 className="text-lg font-medium text-gray-900 mb-3">
+                        Design Fields
+                      </h3>
                       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                         {templateData.verify_design_fields_data
-                          .filter(field => !field.is_deviated)
-                          .map(field => (
-                            <div key={field.categor_id} className="bg-white rounded-lg border border-green-200 p-4">
-                              <h4 className="font-medium text-gray-900">{field.name}</h4>
+                          .filter((field) => !field.is_deviated)
+                          .map((field) => (
+                            <div
+                              key={field.categor_id}
+                              className="bg-white rounded-lg border border-green-200 p-4"
+                            >
+                              <h4 className="font-medium text-gray-900">
+                                {field.name}
+                              </h4>
                               <p className="text-sm text-gray-600 mt-1">
                                 Selected Value: {field.selected_deviation_name}
                               </p>
@@ -478,15 +563,24 @@ const ApproverInterface = () => {
                     </div>
                   )}
 
-                  {templateData.verified_query_data.some(field => !field.is_deviated) && (
+                  {templateData.verified_query_data.some(
+                    (field) => !field.is_deviated
+                  ) && (
                     <div>
-                      <h3 className="text-lg font-medium text-gray-900 mb-3">Query Data</h3>
+                      <h3 className="text-lg font-medium text-gray-900 mb-3">
+                        Query Data
+                      </h3>
                       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                         {templateData.verified_query_data
-                          .filter(field => !field.is_deviated)
-                          .map(field => (
-                            <div key={field.id} className="bg-white rounded-lg border border-green-200 p-4">
-                              <h4 className="font-medium text-gray-900">{field.name}</h4>
+                          .filter((field) => !field.is_deviated)
+                          .map((field) => (
+                            <div
+                              key={field.id}
+                              className="bg-white rounded-lg border border-green-200 p-4"
+                            >
+                              <h4 className="font-medium text-gray-900">
+                                {field.name}
+                              </h4>
                               <p className="text-sm text-gray-600 mt-1">
                                 Value: {field.value}
                               </p>
@@ -532,10 +626,17 @@ const ApproverInterface = () => {
             required
           />
           <div className="flex justify-end gap-4 mt-6">
-            <Button variant="secondary" onClick={() => setShowApprovalModal(false)}>
+            <Button
+              variant="secondary"
+              onClick={() => setShowApprovalModal(false)}
+            >
               Cancel
             </Button>
-            <Button variant="success" onClick={handleSubmit} disabled={loading}>
+            <Button
+              className="bg-green-600 hover:bg-green-700 text-white"
+              onClick={handleSubmit}
+              disabled={loading}
+            >
               Confirm Approval
             </Button>
           </div>
@@ -556,19 +657,55 @@ const ApproverInterface = () => {
             required
           />
           <div className="flex justify-end gap-4 mt-6">
-            <Button 
-              variant="secondary" 
+            <Button
+              variant="secondary"
               onClick={() => setShowRejectionModal(false)}
             >
               Cancel
             </Button>
-            <Button 
-              variant="danger" 
-              onClick={handleRejectSubmit} 
+            <Button
+              className="bg-red-600 hover:bg-red-700 text-white"
+              onClick={handleRejectSubmit}
               disabled={loading || !rejectionComment.trim()}
             >
               Confirm Rejection
             </Button>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal
+        isOpen={showSuccessModal}
+        onClose={() => setShowSuccessModal(false)}
+        title={`Template ${
+          actionType === "approved" ? "Approved" : "Rejected"
+        } Successfully`}
+        closeOnOverlayClick={false}
+      >
+        <div className="p-6">
+          <div className="flex flex-col items-center gap-4">
+            <CheckCircle2 className="w-16 h-16 text-green-500" />
+            <p className="text-lg text-center text-gray-700">
+              The template has been {actionType} successfully.
+            </p>
+            <div className="flex gap-4 mt-4">
+              <Button
+                variant="secondary"
+                onClick={handleExportPDF}
+                className="flex items-center gap-2"
+              >
+                <FileText className="w-4 h-4" />
+                Export PDF
+              </Button>
+              <Button
+                variant="primary"
+                onClick={() => (window.location.href = "/")}
+                className="flex items-center gap-2"
+              >
+                <Home className="w-4 h-4" />
+                Go Home
+              </Button>
+            </div>
           </div>
         </div>
       </Modal>

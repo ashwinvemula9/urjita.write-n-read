@@ -1,21 +1,21 @@
-import { lazy, Suspense } from 'react';
-import { createBrowserRouter } from 'react-router-dom';
-import Layout from '../components/layout/Layout';
-import LoadingSpinner from '../components/common/LoadingSpinner';
-import ProtectedRoute from '../components/auth/ProtectedRoute';
+import { lazy, Suspense } from "react";
+import { createBrowserRouter } from "react-router-dom";
+import Layout from "../components/layout/Layout";
+import LoadingSpinner from "../components/common/LoadingSpinner";
+import ProtectedRoute from "../components/auth/ProtectedRoute";
 
-import { Sample } from '../pages/Sample';
-import RightDrawWrapper from '../pages/RightDrawWrapper';
+import { Sample } from "../pages/Sample";
+import RightDrawWrapper from "../pages/RightDrawWrapper";
 
 // Lazy load pages
-const Home = lazy(() => import('../pages/Home'));
-const About = lazy(() => import('../pages/About'));
-const Dashboard = lazy(() => import('../pages/Dashboard'));
-const Login = lazy(() => import('../pages/Login'));
+const Home = lazy(() => import("../pages/Home"));
+const About = lazy(() => import("../pages/About"));
+const Dashboard = lazy(() => import("../pages/Dashboard"));
+const Login = lazy(() => import("../pages/Login"));
 
 export const router = createBrowserRouter([
   {
-    path: '/',
+    path: "/",
     element: <Layout />,
     children: [
       {
@@ -27,7 +27,7 @@ export const router = createBrowserRouter([
         ),
       },
       {
-        path: 'right-draw',
+        path: "right-draw",
         element: (
           <Suspense fallback={<LoadingSpinner />}>
             <ProtectedRoute>
@@ -37,7 +37,7 @@ export const router = createBrowserRouter([
         ),
       },
       {
-        path: 'sample',
+        path: "sample",
         element: (
           <Suspense fallback={<LoadingSpinner />}>
             <ProtectedRoute>
@@ -47,7 +47,7 @@ export const router = createBrowserRouter([
         ),
       },
       {
-        path: 'about',
+        path: "about",
         element: (
           <Suspense fallback={<LoadingSpinner />}>
             <About />
@@ -55,7 +55,7 @@ export const router = createBrowserRouter([
         ),
       },
       {
-        path: 'login',
+        path: "login",
         element: (
           <Suspense fallback={<LoadingSpinner />}>
             <Login />
@@ -63,7 +63,7 @@ export const router = createBrowserRouter([
         ),
       },
       {
-        path: 'dashboard',
+        path: "dashboard",
         element: (
           <Suspense fallback={<LoadingSpinner />}>
             <ProtectedRoute>

@@ -1,5 +1,12 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { ArrowDown, ArrowUp, Target, FileText, Home, PlusCircle } from "lucide-react";
+import {
+  ArrowDown,
+  ArrowUp,
+  Target,
+  FileText,
+  Home,
+  PlusCircle,
+} from "lucide-react";
 import {
   Input,
   Select,
@@ -14,6 +21,8 @@ import RulesComponent from "../RulesComponent";
 import generatePDF from "../pdf-creators/PDFDocumentDesignerInterface";
 import { useNavigate } from "react-router-dom";
 import { cadAPI } from "../../services/api/endpoints";
+import { saveAs } from "file-saver";
+import { pdf } from "@react-pdf/renderer";
 
 // Constants
 const STEPS = {
@@ -25,7 +34,14 @@ const STEPS = {
 const STEP_ORDER = [STEPS.BASIC_INFO, STEPS.PCB_SPECS, STEPS.DESIGN_RULES];
 
 const REQUIRED_FIELDS = {
-  [STEPS.BASIC_INFO]: ["oppNumber", "opuNumber", "modelName", "partNumber", "component","revisionNumber"],
+  [STEPS.BASIC_INFO]: [
+    "oppNumber",
+    "opuNumber",
+    "modelName",
+    "partNumber",
+    "component",
+    "revisionNumber",
+  ],
   [STEPS.PCB_SPECS]: [],
   [STEPS.DESIGN_RULES]: ["selectedSubCategory"],
 };
@@ -39,7 +55,7 @@ const initialFormState = {
     modelName: "",
     partNumber: "",
     component: "",
-    revisionNumber:""
+    revisionNumber: "",
   },
   [STEPS.PCB_SPECS]: {
     selectedSpecs: {},
@@ -54,29 +70,29 @@ const initialFormState = {
 const initialApiDataState = {
   specifications: [],
   components: [],
-  designOptions:[],
+  designOptions: [],
   designRules: [],
 };
 
 // Add this helper function at the top level
 const getErrorMessage = (specs) => {
-  const copperThickness = specs[6];  // adjust ID as needed
-  const finish = specs[5];  // adjust ID as needed
-  const secondDielectricThickness = specs[7];  // adjust ID as needed
+  const copperThickness = specs[6]; // adjust ID as needed
+  const finish = specs[5]; // adjust ID as needed
+  const secondDielectricThickness = specs[7]; // adjust ID as needed
 
-  if (copperThickness === '76') {
-    if (finish && finish !== '75') {
+  if (copperThickness === "76") {
+    if (finish && finish !== "75") {
       //no dropdown option with 0 value for second dielectric thickness
-      if (secondDielectricThickness === '0') {
+      if (secondDielectricThickness === "0") {
         return "Final PCB thickness should be 1 oZ";
       } else if (secondDielectricThickness) {
         return "Final PCB thickness should be 1 oZ + Multilayer thickness + Prepreg thickness as required.";
       }
     }
-  } else if (copperThickness === '77') {
-    if (finish && finish !== '75') {
+  } else if (copperThickness === "77") {
+    if (finish && finish !== "75") {
       //no dropdown option with 0 value for second dielectric thickness
-      if (secondDielectricThickness === '0') {
+      if (secondDielectricThickness === "0") {
         return "Final PCB thickness should be 1.5 oZ";
       } else if (secondDielectricThickness) {
         return "Final PCB thickness should be 1.5 oZ + Multilayer thickness + Prepreg thickness as required.";
@@ -88,29 +104,112 @@ const getErrorMessage = (specs) => {
 
 // Simplify the PCBSpecifications component
 const PCBSpecifications = ({ formData, apiData, handleFieldChange }) => {
+  const [subCategoriesTwo, setSubCategoriesTwo] = useState({});
+  const [subCategoriesTwoSelections, setSubCategoriesTwoSelections] = useState(
+    {}
+  );
   const errorMessage = getErrorMessage(formData[STEPS.PCB_SPECS].selectedSpecs);
+
+  // Function to fetch sub-categories-two
+  const fetchSubCategoriesTwo = async (subcategoryId) => {
+    try {
+      console.log("Fetching sub-categories for ID:", subcategoryId); // Debug log
+      const data = await pcbAPI.getSubCategoriesTwo(subcategoryId);
+      console.log("Received sub-categories:", data); // Debug log
+      setSubCategoriesTwo((prev) => ({
+        ...prev,
+        [subcategoryId]: data,
+      }));
+    } catch (error) {
+      console.error("Error fetching sub-categories:", error); // Debug log
+      toast.error("Failed to fetch sub-categories");
+    }
+  };
 
   return (
     <FormSection title="PCB Specifications">
-      {apiData.specifications.map((spec) => (
-        <Select
-          key={spec.category_id}
-          label={spec.category_name}
-          options={spec.subcategories.map((sub) => ({
-            value: sub.id,
-            label: sub.name
-          }))}
-          value={formData[STEPS.PCB_SPECS].selectedSpecs[spec.category_id] || ""}
-          onChange={(value) => {
-            handleFieldChange(STEPS.PCB_SPECS, "selectedSpecs", {
-              ...formData[STEPS.PCB_SPECS].selectedSpecs,
-              [spec.category_id]: value,
-            });
-          }}
-          required={spec.category_name !== 'Second Dielectric Thickness'}
-        />
-      ))}
-      
+      {apiData.specifications.map((spec) => {
+        const selectedSubcategoryId = Number(
+          formData[STEPS.PCB_SPECS].selectedSpecs[spec.category_id]
+        );
+        const selectedSubcategory = spec.subcategories.find(
+          (sub) => sub.id === selectedSubcategoryId
+        );
+
+        console.log("Selected subcategory:", selectedSubcategory); // Debug log
+        console.log(
+          "Sub categories two for",
+          selectedSubcategoryId,
+          ":",
+          subCategoriesTwo[selectedSubcategoryId]
+        ); // Debug log
+
+        return (
+          <React.Fragment key={spec.category_id}>
+            <Select
+              label={spec.category_name}
+              options={spec.subcategories.map((sub) => ({
+                value: sub.id,
+                label: sub.name,
+              }))}
+              value={selectedSubcategoryId || ""}
+              onChange={(value) => {
+                const numValue = Number(value);
+                handleFieldChange(STEPS.PCB_SPECS, "selectedSpecs", {
+                  ...formData[STEPS.PCB_SPECS].selectedSpecs,
+                  [spec.category_id]: numValue,
+                });
+
+                // Find the selected subcategory
+                const selectedSub = spec.subcategories.find(
+                  (sub) => sub.id === numValue
+                );
+                console.log("Selected sub with value:", numValue, selectedSub); // Debug log
+
+                if (
+                  selectedSub?.is_sub_2_categories_exists &&
+                  !subCategoriesTwo[numValue]
+                ) {
+                  fetchSubCategoriesTwo(numValue);
+                }
+              }}
+              required={spec.category_name !== "Second Dielectric Thickness"}
+            />
+
+            {/* Replace Input with Select for sub-categories-two */}
+            {selectedSubcategory?.is_sub_2_categories_exists &&
+              subCategoriesTwo[selectedSubcategoryId] && (
+                <div className="ml-4 mt-2 border-l-2 border-gray-200 pl-4">
+                  {subCategoriesTwo[selectedSubcategoryId].map((subTwo) => (
+                    <Select
+                      key={subTwo.id}
+                      label={subTwo.sub_2_category_name}
+                      options={subCategoriesTwo[selectedSubcategoryId].map(
+                        (option) => ({
+                          value: option.id,
+                          label: option.sub_2_category_name,
+                        })
+                      )}
+                      value={
+                        subCategoriesTwoSelections[
+                          `${selectedSubcategoryId}_${subTwo.id}`
+                        ] || ""
+                      }
+                      onChange={(value) => {
+                        setSubCategoriesTwoSelections((prev) => ({
+                          ...prev,
+                          [`${selectedSubcategoryId}_${subTwo.id}`]: value,
+                        }));
+                      }}
+                      required
+                    />
+                  ))}
+                </div>
+              )}
+          </React.Fragment>
+        );
+      })}
+
       {/* Error message display */}
       {errorMessage && (
         <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-md">
@@ -129,7 +228,7 @@ const DesignerInterface = () => {
 
   // API Data State
   const [apiData, setApiData] = useState(initialApiDataState);
-  const [submitted, setSubmitted] = useState(false)
+  const [submitted, setSubmitted] = useState(false);
 
   // Loading States
   const [loadingStates, setLoadingStates] = useState({
@@ -144,7 +243,7 @@ const DesignerInterface = () => {
     rules: null,
     submission: null,
   });
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   // Load saved form data
   useEffect(() => {
@@ -160,12 +259,12 @@ const DesignerInterface = () => {
 
   // Fetch Initial Data
   const fetchInitialData = useCallback(async () => {
-    setLoadingStates(prev => ({ ...prev, initialData: true }));
-    setErrors(prev => ({ ...prev, initialData: null }));
+    setLoadingStates((prev) => ({ ...prev, initialData: true }));
+    setErrors((prev) => ({ ...prev, initialData: null }));
 
     try {
       const [specs, components] = await Promise.all([
-        pcbAPI.getSpecification(1,"designer"),
+        pcbAPI.getSpecification(1, "designer"),
         componentsAPI.getAll(),
       ]);
 
@@ -173,26 +272,25 @@ const DesignerInterface = () => {
         throw new Error("Failed to load initial data");
       }
 
-      setApiData(prev => ({
+      setApiData((prev) => ({
         ...prev,
         specifications: specs,
         components,
       }));
-
     } catch (err) {
-      setErrors(prev => ({
+      setErrors((prev) => ({
         ...prev,
-        initialData: err.message || "Failed to load initial data"
+        initialData: err.message || "Failed to load initial data",
       }));
     } finally {
-      setLoadingStates(prev => ({ ...prev, initialData: false }));
+      setLoadingStates((prev) => ({ ...prev, initialData: false }));
     }
   }, []);
 
   const fetchDesignOptions = async () => {
     try {
-      const response = await rulesAPI.getDesignOptions()
-      setApiData(prev => ({
+      const response = await rulesAPI.getDesignOptions();
+      setApiData((prev) => ({
         ...prev,
         designOptions: response,
       }));
@@ -203,33 +301,35 @@ const DesignerInterface = () => {
 
   // Fetch Design Rules
   const fetchDesignRules = useCallback(async () => {
-    const selectedOptions = Object.entries(formData[STEPS.DESIGN_RULES].selectedCheckboxes)
+    const selectedOptions = Object.entries(
+      formData[STEPS.DESIGN_RULES].selectedCheckboxes
+    )
       .filter(([_, isSelected]) => isSelected)
       .map(([id]) => id);
 
     if (!selectedOptions.length) return;
 
-    setLoadingStates(prev => ({ ...prev, rules: true }));
-    setErrors(prev => ({ ...prev, rules: null }));
+    setLoadingStates((prev) => ({ ...prev, rules: true }));
+    setErrors((prev) => ({ ...prev, rules: null }));
 
     try {
       const rules = await rulesAPI.getRules(selectedOptions);
-      setApiData(prev => ({ ...prev, designRules: rules }));
+      setApiData((prev) => ({ ...prev, designRules: rules }));
     } catch (err) {
-      setErrors(prev => ({
+      setErrors((prev) => ({
         ...prev,
-        rules: "Failed to load design rules"
+        rules: "Failed to load design rules",
       }));
       toast.error("Failed to load design rules. Please try again.");
     } finally {
-      setLoadingStates(prev => ({ ...prev, rules: false }));
+      setLoadingStates((prev) => ({ ...prev, rules: false }));
     }
   }, [formData[STEPS.DESIGN_RULES].selectedCheckboxes]);
 
   // Effect Hooks
   useEffect(() => {
     fetchInitialData();
-    fetchDesignOptions()
+    fetchDesignOptions();
   }, []);
 
   useEffect(() => {
@@ -253,18 +353,20 @@ const DesignerInterface = () => {
     },
     [STEPS.PCB_SPECS]: (data) => {
       if (!apiData.specifications.length) return false;
-      
+
       // Check if all required specifications are selected
-      const requiredSpecs = apiData.specifications.filter(spec => 
-        spec.category_name !== 'Second Dielectric Thickness'
+      const requiredSpecs = apiData.specifications.filter(
+        (spec) => spec.category_name !== "Second Dielectric Thickness"
       );
-      
-      return requiredSpecs.every(spec => 
-        data.selectedSpecs[spec.category_id] !== undefined
+
+      return requiredSpecs.every(
+        (spec) => data.selectedSpecs[spec.category_id] !== undefined
       );
     },
     [STEPS.DESIGN_RULES]: (data) => {
-      const hasSelectedOptions = Object.values(data.selectedCheckboxes).some(Boolean);
+      const hasSelectedOptions = Object.values(data.selectedCheckboxes).some(
+        Boolean
+      );
       return hasSelectedOptions && data.acknowledge;
     },
   };
@@ -272,7 +374,7 @@ const DesignerInterface = () => {
   // Event Handlers
   const handleFieldChange = useCallback((step, field, value) => {
     setIsDirty(true);
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       [step]: {
         ...prev[step],
@@ -284,43 +386,44 @@ const DesignerInterface = () => {
   const currentStepKey = STEP_ORDER[currentStep];
   const isCurrentStepValid =
     validators[currentStepKey]?.(formData[currentStepKey]) ?? false;
-  
-  
-    const createTemplate = async (formData) => {
-      // Transform form data to match API request format
-      const transformedData = {
-        oppNumber: formData.basicInfo.oppNumber,
-        opuNumber: formData.basicInfo.opuNumber,
-        eduNumber: formData.basicInfo.eduNumber,
-        modelName: formData.basicInfo.modelName,
-        partNumber: formData.basicInfo.partNumber,
-        component: formData.basicInfo.component,
-        revisionNumber: formData.basicInfo.revisionNumber,
-        componentSpecifications: formData.pcbSpecs.selectedSpecs,
-        designOptions: Object.entries(formData.designRules.selectedCheckboxes)
-          .filter(([_, isSelected]) => isSelected)
-          .map(([id]) => id)
-      };
-    
-      try {
-        const response = await cadAPI.createTemplate(transformedData);
-        toast.success('Template created successfully!');
-        return response;
-      } catch (error) {
-        console.error('Error creating template:', error);
-        throw new Error(error.message || 'Failed to create template');
-      }
-  };
-  
-  console.log({ formData })
-  console.log({apiData})
 
-  const handleSubmit = async () => {
-    setLoadingStates(prev => ({ ...prev, submission: true }));
-    setErrors(prev => ({ ...prev, submission: null }));
+  const createTemplate = async (formData) => {
+    // Transform form data to match API request format
+    const transformedData = {
+      oppNumber: formData.basicInfo.oppNumber,
+      opuNumber: formData.basicInfo.opuNumber,
+      eduNumber: formData.basicInfo.eduNumber,
+      modelName: formData.basicInfo.modelName,
+      partNumber: formData.basicInfo.partNumber,
+      component: formData.basicInfo.component,
+      revisionNumber: formData.basicInfo.revisionNumber,
+      componentSpecifications: formData.pcbSpecs.selectedSpecs,
+      designOptions: Object.entries(formData.designRules.selectedCheckboxes)
+        .filter(([_, isSelected]) => isSelected)
+        .map(([id]) => id),
+    };
 
     try {
-      const isValid = STEP_ORDER.every((step) => validators[step](formData[step]));
+      const response = await cadAPI.createTemplate(transformedData);
+      toast.success("Template created successfully!");
+      return response;
+    } catch (error) {
+      console.error("Error creating template:", error);
+      throw new Error(error.message || "Failed to create template");
+    }
+  };
+
+  console.log({ formData });
+  console.log({ apiData });
+
+  const handleSubmit = async () => {
+    setLoadingStates((prev) => ({ ...prev, submission: true }));
+    setErrors((prev) => ({ ...prev, submission: null }));
+
+    try {
+      const isValid = STEP_ORDER.every((step) =>
+        validators[step](formData[step])
+      );
       if (!isValid) {
         throw new Error("Please complete all required fields");
       }
@@ -329,26 +432,23 @@ const DesignerInterface = () => {
       await createTemplate(formData);
 
       // Reset form on success
-      setSubmitted(true)
+      setSubmitted(true);
       setIsDirty(false);
       localStorage.removeItem("designerFormData");
     } catch (err) {
-      setErrors(prev => ({
+      setErrors((prev) => ({
         ...prev,
-        submission: err.message || "Failed to submit form"
+        submission: err.message || "Failed to submit form",
       }));
       toast.error(err.message || "Failed to submit form");
     } finally {
-      setLoadingStates(prev => ({ ...prev, submission: false }));
+      setLoadingStates((prev) => ({ ...prev, submission: false }));
     }
   };
   const goHome = () => {
     console.log("going home");
-    navigate("/")
-  }
-
-
-  
+    navigate("/");
+  };
 
   const StepContent = {
     [STEPS.BASIC_INFO]: () => (
@@ -356,50 +456,64 @@ const DesignerInterface = () => {
         <Input
           label="OPP Number"
           value={formData[STEPS.BASIC_INFO].oppNumber}
-          onChange={(value) => handleFieldChange(STEPS.BASIC_INFO, "oppNumber", value)}
+          onChange={(value) =>
+            handleFieldChange(STEPS.BASIC_INFO, "oppNumber", value)
+          }
           required
         />
         <Input
           label="OPU Number"
           value={formData[STEPS.BASIC_INFO].opuNumber}
-          onChange={(value) => handleFieldChange(STEPS.BASIC_INFO, "opuNumber", value)}
+          onChange={(value) =>
+            handleFieldChange(STEPS.BASIC_INFO, "opuNumber", value)
+          }
           required
         />
         <Input
           label="EDU Number"
           value={formData[STEPS.BASIC_INFO].eduNumber}
-          onChange={(value) => handleFieldChange(STEPS.BASIC_INFO, "eduNumber", value)}
+          onChange={(value) =>
+            handleFieldChange(STEPS.BASIC_INFO, "eduNumber", value)
+          }
         />
         <Input
           label="Model Name"
           value={formData[STEPS.BASIC_INFO].modelName}
-          onChange={(value) => handleFieldChange(STEPS.BASIC_INFO, "modelName", value)}
+          onChange={(value) =>
+            handleFieldChange(STEPS.BASIC_INFO, "modelName", value)
+          }
           required
         />
         <Input
           label="Part Number"
           value={formData[STEPS.BASIC_INFO].partNumber}
-          onChange={(value) => handleFieldChange(STEPS.BASIC_INFO, "partNumber", value)}
+          onChange={(value) =>
+            handleFieldChange(STEPS.BASIC_INFO, "partNumber", value)
+          }
           required
         />
         <Input
-        label="Revision Number"
-        value={formData[STEPS.BASIC_INFO].revisionNumber}
-        onChange={(value) => handleFieldChange(STEPS.BASIC_INFO, "revisionNumber", value)}
-        required
-      />
+          label="Revision Number"
+          value={formData[STEPS.BASIC_INFO].revisionNumber}
+          onChange={(value) =>
+            handleFieldChange(STEPS.BASIC_INFO, "revisionNumber", value)
+          }
+          required
+        />
         <Select
           label="Component"
           options={[{ value: 1, label: "B14" }]}
           value={formData[STEPS.BASIC_INFO].component}
-          onChange={(value) => handleFieldChange(STEPS.BASIC_INFO, "component", value)}
+          onChange={(value) =>
+            handleFieldChange(STEPS.BASIC_INFO, "component", value)
+          }
           required
         />
       </FormSection>
     ),
 
     [STEPS.PCB_SPECS]: () => (
-      <PCBSpecifications 
+      <PCBSpecifications
         formData={formData}
         apiData={apiData}
         handleFieldChange={handleFieldChange}
@@ -414,7 +528,7 @@ const DesignerInterface = () => {
               Select Options for Design Rules
             </h2>
           </div>
-          
+
           <div className="grid grid-cols-12 gap-1 p-1">
             <div className="col-span-4 h-[500px] overflow-hidden">
               <h3 className="text-lg font-semibold mb-4">Design Options:</h3>
@@ -424,23 +538,38 @@ const DesignerInterface = () => {
                     key={option.design_option_id}
                     className="flex items-center gap-2 cursor-pointer group transition-colors duration-200 p-3 rounded-lg hover:bg-gray-50 border border-gray-100"
                     onClick={() => {
-                      const newValue = !formData[STEPS.DESIGN_RULES].selectedCheckboxes[option.design_option_id];
-                      handleFieldChange(STEPS.DESIGN_RULES, "selectedCheckboxes", {
-                        ...formData[STEPS.DESIGN_RULES].selectedCheckboxes,
-                        [option.design_option_id]: newValue,
-                      });
+                      const newValue =
+                        !formData[STEPS.DESIGN_RULES].selectedCheckboxes[
+                          option.design_option_id
+                        ];
+                      handleFieldChange(
+                        STEPS.DESIGN_RULES,
+                        "selectedCheckboxes",
+                        {
+                          ...formData[STEPS.DESIGN_RULES].selectedCheckboxes,
+                          [option.design_option_id]: newValue,
+                        }
+                      );
                     }}
                   >
                     <input
                       type="checkbox"
                       className="h-5 w-5"
-                      checked={formData[STEPS.DESIGN_RULES].selectedCheckboxes[option.design_option_id] || false}
+                      checked={
+                        formData[STEPS.DESIGN_RULES].selectedCheckboxes[
+                          option.design_option_id
+                        ] || false
+                      }
                       onChange={(e) => {
                         e.stopPropagation();
-                        handleFieldChange(STEPS.DESIGN_RULES, "selectedCheckboxes", {
-                          ...formData[STEPS.DESIGN_RULES].selectedCheckboxes,
-                          [option.design_option_id]: e.target.checked,
-                        });
+                        handleFieldChange(
+                          STEPS.DESIGN_RULES,
+                          "selectedCheckboxes",
+                          {
+                            ...formData[STEPS.DESIGN_RULES].selectedCheckboxes,
+                            [option.design_option_id]: e.target.checked,
+                          }
+                        );
                       }}
                     />
                     <label className="text-sm font-medium text-gray-700 group-hover:text-gray-900 flex-grow">
@@ -450,14 +579,19 @@ const DesignerInterface = () => {
                 ))}
               </div>
             </div>
-            
+
             <div className="col-span-8 h-[500px] overflow-hidden">
               <div className="h-full flex flex-col">
                 <div className="flex-grow overflow-y-auto pr-4">
-                  <RulesComponent rules={apiData.designRules} selectedCheckboxes />
+                  <RulesComponent
+                    rules={apiData.designRules}
+                    selectedCheckboxes
+                  />
                 </div>
-                
-                {Object.values(formData[STEPS.DESIGN_RULES].selectedCheckboxes).some(Boolean) && (
+
+                {Object.values(
+                  formData[STEPS.DESIGN_RULES].selectedCheckboxes
+                ).some(Boolean) && (
                   <div className="mt-4 pt-4 border-t border-gray-200">
                     <label className="flex items-center space-x-3 cursor-pointer">
                       <input
@@ -465,11 +599,16 @@ const DesignerInterface = () => {
                         className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                         checked={formData[STEPS.DESIGN_RULES].acknowledge}
                         onChange={(e) =>
-                          handleFieldChange(STEPS.DESIGN_RULES, "acknowledge", e.target.checked)
+                          handleFieldChange(
+                            STEPS.DESIGN_RULES,
+                            "acknowledge",
+                            e.target.checked
+                          )
                         }
                       />
                       <span className="text-sm font-medium text-gray-700">
-                        I acknowledge and accept all the design rules specified above
+                        I acknowledge and accept all the design rules specified
+                        above
                       </span>
                     </label>
                   </div>
@@ -546,17 +685,24 @@ const DesignerInterface = () => {
               <div className="icon-fix"></div>
             </div>
           </div>
-          
+
           <h2 className="text-2xl font-bold text-gray-800 mb-4">
             Successfully Submitted!
           </h2>
           <p className="text-gray-600 mb-8">
             Your PCB design configuration has been successfully saved.
           </p>
-          
+
           <div className="flex gap-4 w-full max-w-xs">
             <button
-              onClick={() => generatePDF(formData, apiData.specifications, apiData.designRules, apiData.designOptions)}
+              onClick={() =>
+                generatePDF(
+                  formData,
+                  apiData.specifications,
+                  apiData.designRules,
+                  apiData.designOptions
+                )
+              }
               className="flex items-center justify-center gap-2 px-4 py-2 w-1/2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
             >
               <FileText className="h-4 w-4" />
@@ -581,7 +727,9 @@ const DesignerInterface = () => {
         {/* Compact Header with integrated step indicator */}
         <div className="px-4 sm:px-6 md:px-8 py-4 border-b border-neutral-200">
           <div className="w-full text-center">
-            <h1 className="text-2xl font-semibold text-neutral-900 mb-6">PCB Design Configuration Interface</h1>
+            <h1 className="text-2xl font-semibold text-neutral-900 mb-6">
+              PCB Design Configuration Interface
+            </h1>
             {renderStepIndicator()}
           </div>
         </div>
@@ -594,7 +742,9 @@ const DesignerInterface = () => {
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
               </div>
             ) : errors.initialData ? (
-              <div className="text-red-500 text-center p-4">{errors.initialData}</div>
+              <div className="text-red-500 text-center p-4">
+                {errors.initialData}
+              </div>
             ) : currentStepKey === STEPS.DESIGN_RULES ? (
               <div className="w-full bg-white rounded-xl">
                 <div className="space-y-2">
@@ -603,33 +753,51 @@ const DesignerInterface = () => {
                       Select Options for Design Rules
                     </h2>
                   </div>
-                  
+
                   <div className="grid grid-cols-12 gap-1 p-1">
                     <div className="col-span-4 h-[500px] overflow-hidden">
-                      <h3 className="text-lg font-semibold mb-4">Design Options:</h3>
+                      <h3 className="text-lg font-semibold mb-4">
+                        Design Options:
+                      </h3>
                       <div className="overflow-y-auto h-[450px] pr-4 space-y-2">
                         {apiData.designOptions.map((option) => (
                           <div
                             key={option.design_option_id}
                             className="flex items-center gap-2 cursor-pointer group transition-colors duration-200 p-3 rounded-lg hover:bg-gray-50 border border-gray-100"
                             onClick={() => {
-                              const newValue = !formData[STEPS.DESIGN_RULES].selectedCheckboxes[option.design_option_id];
-                              handleFieldChange(STEPS.DESIGN_RULES, "selectedCheckboxes", {
-                                ...formData[STEPS.DESIGN_RULES].selectedCheckboxes,
-                                [option.design_option_id]: newValue,
-                              });
+                              const newValue =
+                                !formData[STEPS.DESIGN_RULES]
+                                  .selectedCheckboxes[option.design_option_id];
+                              handleFieldChange(
+                                STEPS.DESIGN_RULES,
+                                "selectedCheckboxes",
+                                {
+                                  ...formData[STEPS.DESIGN_RULES]
+                                    .selectedCheckboxes,
+                                  [option.design_option_id]: newValue,
+                                }
+                              );
                             }}
                           >
                             <input
                               type="checkbox"
                               className="h-5 w-5"
-                              checked={formData[STEPS.DESIGN_RULES].selectedCheckboxes[option.design_option_id] || false}
+                              checked={
+                                formData[STEPS.DESIGN_RULES].selectedCheckboxes[
+                                  option.design_option_id
+                                ] || false
+                              }
                               onChange={(e) => {
                                 e.stopPropagation();
-                                handleFieldChange(STEPS.DESIGN_RULES, "selectedCheckboxes", {
-                                  ...formData[STEPS.DESIGN_RULES].selectedCheckboxes,
-                                  [option.design_option_id]: e.target.checked,
-                                });
+                                handleFieldChange(
+                                  STEPS.DESIGN_RULES,
+                                  "selectedCheckboxes",
+                                  {
+                                    ...formData[STEPS.DESIGN_RULES]
+                                      .selectedCheckboxes,
+                                    [option.design_option_id]: e.target.checked,
+                                  }
+                                );
                               }}
                             />
                             <label className="text-sm font-medium text-gray-700 group-hover:text-gray-900 flex-grow">
@@ -639,26 +807,38 @@ const DesignerInterface = () => {
                         ))}
                       </div>
                     </div>
-                    
+
                     <div className="col-span-8 h-[500px] overflow-hidden">
                       <div className="h-full flex flex-col">
                         <div className="flex-grow overflow-y-auto pr-4">
-                          <RulesComponent rules={apiData.designRules} selectedCheckboxes />
+                          <RulesComponent
+                            rules={apiData.designRules}
+                            selectedCheckboxes
+                          />
                         </div>
-                        
-                        {Object.values(formData[STEPS.DESIGN_RULES].selectedCheckboxes).some(Boolean) && (
+
+                        {Object.values(
+                          formData[STEPS.DESIGN_RULES].selectedCheckboxes
+                        ).some(Boolean) && (
                           <div className="mt-4 pt-4 border-t border-gray-200">
                             <label className="flex items-center space-x-3 cursor-pointer">
                               <input
                                 type="checkbox"
                                 className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                                checked={formData[STEPS.DESIGN_RULES].acknowledge}
+                                checked={
+                                  formData[STEPS.DESIGN_RULES].acknowledge
+                                }
                                 onChange={(e) =>
-                                  handleFieldChange(STEPS.DESIGN_RULES, "acknowledge", e.target.checked)
+                                  handleFieldChange(
+                                    STEPS.DESIGN_RULES,
+                                    "acknowledge",
+                                    e.target.checked
+                                  )
                                 }
                               />
                               <span className="text-sm font-medium text-gray-700">
-                                I acknowledge and accept all the design rules specified above
+                                I acknowledge and accept all the design rules
+                                specified above
                               </span>
                             </label>
                           </div>
@@ -689,8 +869,8 @@ const DesignerInterface = () => {
               {currentStep === STEP_ORDER.length - 1 ? (
                 <>
                   {formData[STEPS.DESIGN_RULES].acknowledge && (
-                    <Button 
-                      variant="primary" 
+                    <Button
+                      variant="primary"
                       onClick={handleSubmit}
                       disabled={loadingStates.submission}
                     >

@@ -1,19 +1,20 @@
-import React, { useState } from 'react';
-import { Search, AlertCircle, FileText, Filter } from 'lucide-react';
+import React, { useState } from "react";
+import { Search, AlertCircle, FileText, Filter } from "lucide-react";
 
 const RulesComponent = ({ rules, selectedCheckboxes }) => {
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [activeDoc, setActiveDoc] = useState(null);
-  
+
   // Get unique design documents
-  const uniqueDesignDocs = [...new Set(rules.map(rule => rule.design_doc))];
-  
+  const uniqueDesignDocs = [...new Set(rules.map((rule) => rule.design_doc))];
+
   // Filter rules based on search and active document
-  const filteredRules = rules.filter(rule => {
-    const matchesSearch = rule.parameter.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  const filteredRules = rules.filter((rule) => {
+    const matchesSearch =
+      rule.parameter.toLowerCase().includes(searchTerm.toLowerCase()) ||
       rule.rule_number.includes(searchTerm) ||
       rule.design_doc.toLowerCase().includes(searchTerm.toLowerCase());
-      
+
     return matchesSearch && (!activeDoc || rule.design_doc === activeDoc);
   });
 
@@ -28,17 +29,28 @@ const RulesComponent = ({ rules, selectedCheckboxes }) => {
             <div className="flex items-center gap-6 text-sm">
               <div className="flex items-center gap-2 text-neutral-600">
                 <FileText className="w-4 h-4" />
-                <span>Total Rules: <span className="font-medium text-neutral-900">{rules.length}</span></span>
+                <span>
+                  Total Rules:{" "}
+                  <span className="font-medium text-neutral-900">
+                    {rules.length}
+                  </span>
+                </span>
               </div>
               <div className="h-4 w-px bg-neutral-300" />
               <div className="text-neutral-600">
-                Documents: <span className="font-medium text-neutral-900">{uniqueDesignDocs.length}</span>
+                Documents:{" "}
+                <span className="font-medium text-neutral-900">
+                  {uniqueDesignDocs.length}
+                </span>
               </div>
               {searchTerm && (
                 <>
                   <div className="h-4 w-px bg-neutral-300" />
                   <div className="text-neutral-600">
-                    Filtered: <span className="font-medium text-neutral-900">{filteredRules.length}</span>
+                    Filtered:{" "}
+                    <span className="font-medium text-neutral-900">
+                      {filteredRules.length}
+                    </span>
                   </div>
                 </>
               )}
@@ -62,9 +74,11 @@ const RulesComponent = ({ rules, selectedCheckboxes }) => {
             <button
               onClick={() => setActiveDoc(null)}
               className={`px-3 py-1.5 text-sm rounded-full transition-colors
-                ${!activeDoc 
-                  ? 'bg-primary-100 text-primary-700 font-medium' 
-                  : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'}`}
+                ${
+                  !activeDoc
+                    ? "bg-primary-100 text-primary-700 font-medium"
+                    : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+                }`}
             >
               All Documents
             </button>
@@ -73,9 +87,11 @@ const RulesComponent = ({ rules, selectedCheckboxes }) => {
                 key={doc}
                 onClick={() => setActiveDoc(doc === activeDoc ? null : doc)}
                 className={`px-3 py-1.5 text-sm rounded-full transition-colors
-                  ${doc === activeDoc 
-                    ? 'bg-primary-100 text-primary-700 font-medium' 
-                    : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'}`}
+                  ${
+                    doc === activeDoc
+                      ? "bg-primary-100 text-primary-700 font-medium"
+                      : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+                  }`}
               >
                 {doc}
               </button>
@@ -88,8 +104,8 @@ const RulesComponent = ({ rules, selectedCheckboxes }) => {
       <div className="flex-1 overflow-y-auto p-4">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {filteredRules.map((rule) => (
-            <div 
-              key={rule.id} 
+            <div
+              key={rule.id}
               className="bg-white rounded-lg border border-neutral-200 overflow-hidden hover:border-primary-300 transition-colors"
             >
               {/* Rule Header */}
@@ -115,20 +131,32 @@ const RulesComponent = ({ rules, selectedCheckboxes }) => {
                 <div className="flex flex-wrap gap-3">
                   {rule.min_value && rule.min_value !== "N/A" && (
                     <div className="px-3 py-2 rounded-lg bg-red-50 border border-red-100">
-                      <span className="text-neutral-500 text-sm mr-2">Min:</span>
-                      <span className="text-red-700 font-medium">{rule.min_value}</span>
+                      <span className="text-neutral-500 text-sm mr-2">
+                        Min:
+                      </span>
+                      <span className="text-red-700 font-medium">
+                        {rule.min_value}
+                      </span>
                     </div>
                   )}
                   {rule.nominal && rule.nominal !== "N/A" && (
                     <div className="px-3 py-2 rounded-lg bg-neutral-50 border border-neutral-200">
-                      <span className="text-neutral-500 text-sm mr-2">Nominal:</span>
-                      <span className="text-neutral-700 font-medium">{rule.nominal}</span>
+                      <span className="text-neutral-500 text-sm mr-2">
+                        Nominal:
+                      </span>
+                      <span className="text-neutral-700 font-medium">
+                        {rule.nominal}
+                      </span>
                     </div>
                   )}
                   {rule.max_value && rule.max_value !== "N/A" && (
                     <div className="px-3 py-2 rounded-lg bg-green-50 border border-green-100">
-                      <span className="text-neutral-500 text-sm mr-2">Max:</span>
-                      <span className="text-green-700 font-medium">{rule.max_value}</span>
+                      <span className="text-neutral-500 text-sm mr-2">
+                        Max:
+                      </span>
+                      <span className="text-green-700 font-medium">
+                        {rule.max_value}
+                      </span>
                     </div>
                   )}
                 </div>
