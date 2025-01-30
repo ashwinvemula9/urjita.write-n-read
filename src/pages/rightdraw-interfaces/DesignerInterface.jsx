@@ -80,19 +80,19 @@ const getErrorMessage = (specs) => {
   const finish = specs[5]; // adjust ID as needed
   const secondDielectricThickness = specs[7]; // adjust ID as needed
 
-  if (copperThickness === "76") {
-    if (finish && finish !== "75") {
+  if (copperThickness === 76) {
+    if (finish && finish !== 75) {
       //no dropdown option with 0 value for second dielectric thickness
-      if (secondDielectricThickness === "0") {
+      if (secondDielectricThickness === 129) {
         return "Final PCB thickness should be 1 oZ";
       } else if (secondDielectricThickness) {
         return "Final PCB thickness should be 1 oZ + Multilayer thickness + Prepreg thickness as required.";
       }
     }
-  } else if (copperThickness === "77") {
-    if (finish && finish !== "75") {
+  } else if (copperThickness === 77) {
+    if (finish && finish !== 75) {
       //no dropdown option with 0 value for second dielectric thickness
-      if (secondDielectricThickness === "0") {
+      if (secondDielectricThickness === 129) {
         return "Final PCB thickness should be 1.5 oZ";
       } else if (secondDielectricThickness) {
         return "Final PCB thickness should be 1.5 oZ + Multilayer thickness + Prepreg thickness as required.";
@@ -113,21 +113,42 @@ const PCBSpecifications = ({ formData, apiData, handleFieldChange }) => {
   // Function to fetch sub-categories-two
   const fetchSubCategoriesTwo = async (subcategoryId) => {
     try {
-      console.log("Fetching sub-categories for ID:", subcategoryId); // Debug log
       const data = await pcbAPI.getSubCategoriesTwo(subcategoryId);
-      console.log("Received sub-categories:", data); // Debug log
       setSubCategoriesTwo((prev) => ({
         ...prev,
         [subcategoryId]: data,
       }));
     } catch (error) {
-      console.error("Error fetching sub-categories:", error); // Debug log
+      console.error("Error fetching sub-categories:", error);
       toast.error("Failed to fetch sub-categories");
     }
   };
 
+  // Effect to fetch sub-categories-two when a category with sub-categories is selected
+  useEffect(() => {
+    const selectedSpecs = formData[STEPS.PCB_SPECS].selectedSpecs;
+
+    apiData.specifications.forEach((spec) => {
+      const selectedSubcategoryId = selectedSpecs[spec.category_id];
+      const selectedSubcategory = spec.subcategories.find(
+        (sub) => sub.id === selectedSubcategoryId
+      );
+
+      if (
+        selectedSubcategory?.is_sub_2_categories_exists &&
+        !subCategoriesTwo[selectedSubcategoryId]
+      ) {
+        fetchSubCategoriesTwo(selectedSubcategoryId);
+      }
+    });
+  }, [formData[STEPS.PCB_SPECS].selectedSpecs]);
+
   return (
-    <FormSection title="PCB Specifications">
+    <FormSection
+      title="PCB Specifications"
+      className="space-y-2"
+      gridClassName="grid-cols-1 gap-2"
+    >
       {apiData.specifications.map((spec) => {
         const selectedSubcategoryId = Number(
           formData[STEPS.PCB_SPECS].selectedSpecs[spec.category_id]
@@ -136,83 +157,88 @@ const PCBSpecifications = ({ formData, apiData, handleFieldChange }) => {
           (sub) => sub.id === selectedSubcategoryId
         );
 
-        console.log("Selected subcategory:", selectedSubcategory); // Debug log
-        console.log(
-          "Sub categories two for",
-          selectedSubcategoryId,
-          ":",
-          subCategoriesTwo[selectedSubcategoryId]
-        ); // Debug log
-
         return (
-          <React.Fragment key={spec.category_id}>
-            <Select
-              label={spec.category_name}
-              options={spec.subcategories.map((sub) => ({
-                value: sub.id,
-                label: sub.name,
-              }))}
-              value={selectedSubcategoryId || ""}
-              onChange={(value) => {
-                const numValue = Number(value);
-                handleFieldChange(STEPS.PCB_SPECS, "selectedSpecs", {
-                  ...formData[STEPS.PCB_SPECS].selectedSpecs,
-                  [spec.category_id]: numValue,
-                });
+          <Card
+            key={spec.category_id}
+            className="border border-gray-200 shadow-sm"
+            bodyClassName="p-3"
+          >
+            <div className="space-y-2">
+              {/* Main category */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  {spec.category_name}
+                  {spec.category_name !== "Second Dielectric Thickness" && (
+                    <span className="text-red-500 ml-1">*</span>
+                  )}
+                </label>
+                <Select
+                  options={spec.subcategories.map((sub) => ({
+                    value: sub.id,
+                    label: sub.name,
+                  }))}
+                  value={selectedSubcategoryId || ""}
+                  onChange={(value) => {
+                    handleFieldChange(STEPS.PCB_SPECS, "selectedSpecs", {
+                      ...formData[STEPS.PCB_SPECS].selectedSpecs,
+                      [spec.category_id]: Number(value),
+                    });
+                  }}
+                  required={
+                    spec.category_name !== "Second Dielectric Thickness"
+                  }
+                  placeholder={`Select ${spec.category_name}`}
+                  className="min-h-[36px]"
+                />
+              </div>
 
-                // Find the selected subcategory
-                const selectedSub = spec.subcategories.find(
-                  (sub) => sub.id === numValue
-                );
-                console.log("Selected sub with value:", numValue, selectedSub); // Debug log
-
-                if (
-                  selectedSub?.is_sub_2_categories_exists &&
-                  !subCategoriesTwo[numValue]
-                ) {
-                  fetchSubCategoriesTwo(numValue);
-                }
-              }}
-              required={spec.category_name !== "Second Dielectric Thickness"}
-            />
-
-            {/* Replace Input with Select for sub-categories-two */}
-            {selectedSubcategory?.is_sub_2_categories_exists &&
-              subCategoriesTwo[selectedSubcategoryId] && (
-                <div className="ml-4 mt-2 border-l-2 border-gray-200 pl-4">
-                  {subCategoriesTwo[selectedSubcategoryId].map((subTwo) => (
-                    <Select
-                      key={subTwo.id}
-                      label={subTwo.sub_2_category_name}
-                      options={subCategoriesTwo[selectedSubcategoryId].map(
-                        (option) => ({
-                          value: option.id,
-                          label: option.sub_2_category_name,
-                        })
-                      )}
-                      value={
-                        subCategoriesTwoSelections[
-                          `${selectedSubcategoryId}_${subTwo.id}`
-                        ] || ""
-                      }
-                      onChange={(value) => {
-                        setSubCategoriesTwoSelections((prev) => ({
-                          ...prev,
-                          [`${selectedSubcategoryId}_${subTwo.id}`]: value,
-                        }));
-                      }}
-                      required
-                    />
-                  ))}
-                </div>
-              )}
-          </React.Fragment>
+              {/* Sub-categories-two section */}
+              {selectedSubcategory?.is_sub_2_categories_exists &&
+                subCategoriesTwo[selectedSubcategoryId] && (
+                  <div className="mt-2 pt-2 border-t border-gray-100">
+                    <div className="grid grid-cols-2 gap-2">
+                      {subCategoriesTwo[selectedSubcategoryId].map((subTwo) => (
+                        <div key={subTwo.id}>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            {subTwo.sub_2_category_name}
+                            <span className="text-red-500 ml-1">*</span>
+                          </label>
+                          <Select
+                            options={subCategoriesTwo[
+                              selectedSubcategoryId
+                            ].map((option) => ({
+                              value: option.id,
+                              label: option.sub_2_category_name,
+                            }))}
+                            value={
+                              subCategoriesTwoSelections[
+                                `${selectedSubcategoryId}_${subTwo.id}`
+                              ] || ""
+                            }
+                            onChange={(value) => {
+                              setSubCategoriesTwoSelections((prev) => ({
+                                ...prev,
+                                [`${selectedSubcategoryId}_${subTwo.id}`]:
+                                  value,
+                              }));
+                            }}
+                            required
+                            placeholder={`Select ${subTwo.sub_2_category_name}`}
+                            className="min-h-[36px]"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+            </div>
+          </Card>
         );
       })}
 
       {/* Error message display */}
       {errorMessage && (
-        <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-md">
+        <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded-md">
           <p className="text-red-600 text-sm">{errorMessage}</p>
         </div>
       )}

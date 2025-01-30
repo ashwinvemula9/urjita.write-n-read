@@ -158,12 +158,20 @@ const ApproverInterface = () => {
     }
   };
 
-  const handleStatusChange = (type, id) => {
+  const isFieldApproved = (type, id) => {
+    return approvalStatus[type][id] === "approved";
+  };
+
+  const isFieldRejected = (type, id) => {
+    return approvalStatus[type][id] === "rejected";
+  };
+
+  const handleStatusChange = (type, id, status) => {
     setApprovalStatus((prev) => ({
       ...prev,
       [type]: {
         ...prev[type],
-        [id]: !prev[type][id], // Toggle checkbox state
+        [id]: status,
       },
     }));
   };
@@ -178,10 +186,11 @@ const ApproverInterface = () => {
       [];
 
     const allDesignFieldsApproved = deviatedDesignFields.every(
-      (field) => approvalStatus.verifyDesignFields[field.categor_id]
+      (field) =>
+        approvalStatus.verifyDesignFields[field.categor_id] === "approved"
     );
     const allQueryDataApproved = deviatedQueryData.every(
-      (field) => approvalStatus.verifiedQueryData[field.id]
+      (field) => approvalStatus.verifiedQueryData[field.id] === "approved"
     );
 
     return allDesignFieldsApproved && allQueryDataApproved;
@@ -451,26 +460,48 @@ const ApproverInterface = () => {
                                     {field.selected_deviation_name}
                                   </p>
                                 </div>
-                                <label className="flex items-center space-x-2">
-                                  <input
-                                    type="checkbox"
-                                    checked={
-                                      !!approvalStatus.verifyDesignFields[
-                                        field.categor_id
-                                      ]
-                                    }
-                                    onChange={() =>
+                                <div className="flex gap-2">
+                                  <button
+                                    onClick={() =>
                                       handleStatusChange(
                                         "verifyDesignFields",
-                                        field.categor_id
+                                        field.categor_id,
+                                        "approved"
                                       )
                                     }
-                                    className="w-5 h-5 rounded text-green-600 focus:ring-green-500"
-                                  />
-                                  <span className="text-sm font-medium text-gray-700">
+                                    className={`px-3 py-1 rounded-md text-sm font-medium transition-colors
+                                      ${
+                                        isFieldApproved(
+                                          "verifyDesignFields",
+                                          field.categor_id
+                                        )
+                                          ? "bg-green-600 text-white"
+                                          : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                                      }`}
+                                  >
                                     Approve
-                                  </span>
-                                </label>
+                                  </button>
+                                  <button
+                                    onClick={() =>
+                                      handleStatusChange(
+                                        "verifyDesignFields",
+                                        field.categor_id,
+                                        "rejected"
+                                      )
+                                    }
+                                    className={`px-3 py-1 rounded-md text-sm font-medium transition-colors
+                                      ${
+                                        isFieldRejected(
+                                          "verifyDesignFields",
+                                          field.categor_id
+                                        )
+                                          ? "bg-red-600 text-white"
+                                          : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                                      }`}
+                                  >
+                                    Reject
+                                  </button>
+                                </div>
                               </div>
                             </div>
                           ))}
@@ -502,26 +533,48 @@ const ApproverInterface = () => {
                                     Value: {field.value}
                                   </p>
                                 </div>
-                                <label className="flex items-center space-x-2">
-                                  <input
-                                    type="checkbox"
-                                    checked={
-                                      !!approvalStatus.verifiedQueryData[
-                                        field.id
-                                      ]
-                                    }
-                                    onChange={() =>
+                                <div className="flex gap-2">
+                                  <button
+                                    onClick={() =>
                                       handleStatusChange(
                                         "verifiedQueryData",
-                                        field.id
+                                        field.id,
+                                        "approved"
                                       )
                                     }
-                                    className="w-5 h-5 rounded text-green-600 focus:ring-green-500"
-                                  />
-                                  <span className="text-sm font-medium text-gray-700">
+                                    className={`px-3 py-1 rounded-md text-sm font-medium transition-colors
+                                      ${
+                                        isFieldApproved(
+                                          "verifiedQueryData",
+                                          field.id
+                                        )
+                                          ? "bg-green-600 text-white"
+                                          : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                                      }`}
+                                  >
                                     Approve
-                                  </span>
-                                </label>
+                                  </button>
+                                  <button
+                                    onClick={() =>
+                                      handleStatusChange(
+                                        "verifiedQueryData",
+                                        field.id,
+                                        "rejected"
+                                      )
+                                    }
+                                    className={`px-3 py-1 rounded-md text-sm font-medium transition-colors
+                                      ${
+                                        isFieldRejected(
+                                          "verifiedQueryData",
+                                          field.id
+                                        )
+                                          ? "bg-red-600 text-white"
+                                          : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                                      }`}
+                                  >
+                                    Reject
+                                  </button>
+                                </div>
                               </div>
                             </div>
                           ))}
