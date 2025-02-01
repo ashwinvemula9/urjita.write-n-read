@@ -152,6 +152,7 @@ const ApproverInterface = () => {
       const response = await approverAPI.getApproverTemplate(formData);
       setTemplateData(response.res);
     } catch (error) {
+      console.log("error", error);
       toast.error(error.message);
     } finally {
       setLoading(false);
@@ -655,7 +656,8 @@ const ApproverInterface = () => {
                 </button>
                 <button
                   onClick={handleRejectAll}
-                  className="px-6 py-2 rounded-lg font-medium bg-red-600 text-white hover:bg-red-700"
+                  disabled={isAllDeviationsApproved()}
+                  className="px-6 py-2 rounded-lg font-medium bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Reject All
                 </button>

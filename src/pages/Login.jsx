@@ -27,37 +27,31 @@ const LoginPage = () => {
 
     try {
       const response = await authAPI.login({ email, password });
-      console.log({ response });
-      if (response) {
+      console.log("response", response);
+      if (response?.access) {
         localStorage.setItem(
           "user",
           JSON.stringify({
             accessToken: response.access,
             refreshToken: response.refresh,
             role: response.role,
+            full_name: response.full_name,
           })
         );
+        toast.success("Successfully logged in!");
+        navigate("/");
+      } else {
+        throw new Error(response?.data?.error?.message);
       }
-
-      toast.success("Successfully logged in!", {
-        autoClose: 1500,
-        position: "top-right",
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-      });
-
-      navigate("/");
     } catch (error) {
-      toast.error(error.message || "Login failed. Please try again.", {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-      });
+      console.log("error", error);
+      const errorMessage =
+        error.response?.data?.detail ||
+        error.response?.data?.message ||
+        error.message ||
+        "Invalid email or password";
+      toast.error(errorMessage);
+      setPassword(""); // Clear password on failed login
     } finally {
       setLoading(false);
     }
@@ -74,15 +68,9 @@ const LoginPage = () => {
     try {
       await authAPI.requestPasswordReset({ email, password });
 
-      toast.success("Password reset successfully", {
-        autoClose: 3000,
-        position: "top-right",
-      });
+      toast.success("Password reset successfully");
     } catch (error) {
-      toast.error(error.message, {
-        position: "top-right",
-        autoClose: 3000,
-      });
+      toast.error(error.message);
     } finally {
       setLoading(false);
     }

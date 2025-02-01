@@ -214,7 +214,7 @@ const PDFDocumentDesignerInterface = ({
           <View style={styles.header}>
             <Text style={styles.title}>PCB Design Specification Document</Text>
             <Text style={styles.subtitle}>Generated on {timestamp}</Text>
-            <Text style={styles.metadata}>Created by: {user?.email}</Text>
+            <Text style={styles.metadata}>Created by: {user?.full_name}</Text>
           </View>
 
           <View style={styles.section}>

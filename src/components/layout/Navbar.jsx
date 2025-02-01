@@ -1,15 +1,32 @@
-import React, { useState } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Menu, X, LogOut, ChevronDown } from 'lucide-react';
+import React, { useState, useRef, useEffect } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Menu, X, LogOut, ChevronDown } from "lucide-react";
 import logo from "../../assets/logo.svg";
-import Logo from '../Images/logo';
+import Logo from "../Images/logo";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  
+
+  // Add ref for the profile dropdown container
+  const profileRef = useRef(null);
+
+  // Add effect to handle clicks outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (profileRef.current && !profileRef.current.contains(event.target)) {
+        setIsProfileOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
   const userString = localStorage.getItem("user");
   const user = userString ? JSON.parse(userString) : null;
 
@@ -19,8 +36,8 @@ const Navbar = () => {
   };
 
   const navigation = [
-    { name: 'Home', href: '/' },
-    { name: 'RightDraw', href: '/right-draw' },
+    { name: "Home", href: "/" },
+    { name: "RightDraw", href: "/right-draw" },
   ];
 
   const isActive = (path) => {
@@ -35,11 +52,11 @@ const Navbar = () => {
           <div className="flex">
             {/* Logo */}
             <div className="flex-shrink-0 flex items-center">
-              <Link 
-                to="/" 
+              <Link
+                to="/"
                 className="flex items-center space-x-1 w-[60px] hover:opacity-80 transition-all duration-300 transform hover:scale-105"
               >
-                <Logo fill='#fff' />
+                <Logo fill="#fff" />
               </Link>
             </div>
           </div>
@@ -47,7 +64,7 @@ const Navbar = () => {
           {/* User Profile Dropdown */}
           <div className="hidden sm:ml-4 sm:flex sm:items-center">
             {user ? (
-              <div className="relative">
+              <div className="relative" ref={profileRef}>
                 <button
                   onClick={() => setIsProfileOpen(!isProfileOpen)}
                   className="flex items-center space-x-2 px-3 py-1 rounded-md text-sm font-medium text-neutral-100 
@@ -55,14 +72,16 @@ const Navbar = () => {
                     transition-all duration-200 focus:outline-none border border-neutral-700/50"
                 >
                   <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
-                  <span>{user.role}</span>
+                  <span>{user.full_name}</span>
                   <ChevronDown className="h-3 w-3 text-neutral-400" />
                 </button>
 
                 {/* Profile Dropdown */}
                 {isProfileOpen && (
-                  <div className="absolute right-0 mt-1 w-48 rounded-md shadow-[0_8px_30px_rgb(0,0,0,0.12)] bg-neutral-900/95 
-                    backdrop-blur-lg ring-1 ring-white/10 transform opacity-100 scale-100 transition-all duration-200">
+                  <div
+                    className="absolute right-0 mt-1 w-48 rounded-md shadow-[0_8px_30px_rgb(0,0,0,0.12)] bg-neutral-900/95 
+                    backdrop-blur-lg ring-1 ring-white/10 transform opacity-100 scale-100 transition-all duration-200"
+                  >
                     <div className="py-1">
                       <button
                         onClick={handleLogout}
@@ -70,7 +89,9 @@ const Navbar = () => {
                           hover:bg-neutral-800/80 transition-colors duration-150 group"
                       >
                         <LogOut className="h-3 w-3 mr-2 text-neutral-500 group-hover:text-red-400 transition-colors" />
-                        <span className="group-hover:text-red-400 transition-colors">Sign out</span>
+                        <span className="group-hover:text-red-400 transition-colors">
+                          Sign out
+                        </span>
                       </button>
                     </div>
                   </div>
@@ -108,8 +129,10 @@ const Navbar = () => {
 
       {/* Mobile menu */}
       {isOpen && (
-        <div className="sm:hidden bg-neutral-900/95 border-b border-neutral-800 shadow-[0_8px_30px_rgb(0,0,0,0.12)]
-          backdrop-blur-lg animate-fadeIn">
+        <div
+          className="sm:hidden bg-neutral-900/95 border-b border-neutral-800 shadow-[0_8px_30px_rgb(0,0,0,0.12)]
+          backdrop-blur-lg animate-fadeIn"
+        >
           <div className="px-2 pt-2 pb-3 space-y-1">
             {navigation.map((item) => (
               <Link
@@ -118,8 +141,8 @@ const Navbar = () => {
                 className={`block px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200 
                   ${
                     isActive(item.href)
-                      ? 'text-white bg-primary-600/90 shadow-md'
-                      : 'text-neutral-300 hover:text-white hover:bg-neutral-800/80 hover:shadow-sm'
+                      ? "text-white bg-primary-600/90 shadow-md"
+                      : "text-neutral-300 hover:text-white hover:bg-neutral-800/80 hover:shadow-sm"
                   }`}
               >
                 {item.name}
@@ -152,4 +175,4 @@ const Navbar = () => {
   );
 };
 
-export default Navbar; 
+export default Navbar;

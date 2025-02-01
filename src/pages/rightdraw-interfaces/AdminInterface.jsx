@@ -32,43 +32,189 @@ const AddUserForm = ({ onClose }) => {
     email: "",
     password: "",
     password2: "",
-    roles: [],
+    full_name: "",
+    role: [],
   });
-  const [error, setError] = useState("");
+  const [errors, setErrors] = useState({
+    password: [],
+    password2: [],
+    email: [],
+    general: [],
+  });
+  const [touched, setTouched] = useState({
+    password: false,
+    password2: false,
+    email: false,
+  });
   const [loading, setLoading] = useState(false);
+
+  const validatePassword = (password) => {
+    const errors = [];
+    if (password.length < 8) {
+      errors.push("Password must be at least 8 characters long");
+    }
+    return errors;
+  };
+
+  const validateConfirmPassword = (password2) => {
+    const errors = [];
+    if (password2 !== formData.password) {
+      errors.push("Passwords do not match");
+    }
+    return errors;
+  };
+
+  const handleBlur = (field) => {
+    setTouched((prev) => ({ ...prev, [field]: true }));
+
+    if (field === "password") {
+      setErrors((prev) => ({
+        ...prev,
+        password: validatePassword(formData.password),
+      }));
+    } else if (field === "password2") {
+      setErrors((prev) => ({
+        ...prev,
+        password2: validateConfirmPassword(formData.password2),
+      }));
+    }
+  };
+
+  const handlePasswordChange = (e) => {
+    const newPassword = e.target.value;
+    setFormData((prev) => ({ ...prev, password: newPassword }));
+    if (touched.password) {
+      setErrors((prev) => ({
+        ...prev,
+        password: validatePassword(newPassword),
+        password2: formData.password2
+          ? validateConfirmPassword(formData.password2)
+          : [],
+      }));
+    }
+  };
+
+  const handleConfirmPasswordChange = (e) => {
+    const newPassword2 = e.target.value;
+    setFormData((prev) => ({ ...prev, password2: newPassword2 }));
+    if (touched.password2) {
+      setErrors((prev) => ({
+        ...prev,
+        password2: validateConfirmPassword(newPassword2),
+      }));
+    }
+  };
+
+  const isFormValid = () => {
+    return (
+      formData.email &&
+      formData.full_name &&
+      formData.password &&
+      formData.password2 &&
+      formData.role.length > 0 &&
+      errors.password.length === 0 &&
+      errors.password2.length === 0
+    );
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (formData.password === formData.password2) {
-      setLoading(true);
-      setError("");
+    if (!isFormValid()) return;
 
-      try {
-        await authAPI.register(formData);
-        toast.success("User Added Successfully");
-        onClose();
-      } catch (err) {
-        setError(err.message);
-        toast.error("An error occurred while adding user");
-      } finally {
-        setLoading(false);
+    setLoading(true);
+    try {
+      await authAPI.register({
+        email: formData.email,
+        password: formData.password,
+        password2: formData.password2,
+        full_name: formData.full_name,
+        role: formData.role,
+      });
+      toast.success("User Added Successfully");
+      onClose();
+    } catch (err) {
+      setLoading(false);
+
+      // If err is an object containing validation errors
+      if (typeof err === "object" && err !== null && !(err instanceof Error)) {
+        setErrors((prev) => ({
+          ...prev,
+          ...err,
+          // Ensure all error fields are arrays
+          password: Array.isArray(err.password)
+            ? err.password
+            : err.password
+            ? [err.password]
+            : [],
+          email: Array.isArray(err.email)
+            ? err.email
+            : err.email
+            ? [err.email]
+            : [],
+          general: Array.isArray(err.general)
+            ? err.general
+            : err.general
+            ? [err.general]
+            : [],
+        }));
+
+        // Set touched state for fields with errors
+        setTouched((prev) => ({
+          ...prev,
+          password: !!err.password,
+          email: !!err.email,
+        }));
+
+        // Show toast for general errors
+        if (err.general) {
+          toast.error(err.general[0]);
+        }
+      } else {
+        // Handle non-validation errors
+        toast.error(err.message || "An error occurred while adding user");
       }
-    } else {
-      setError("Passwords do not match, please check again");
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleRoleChange = (role) => {
     setFormData((prev) => ({
       ...prev,
-      roles: prev.roles.includes(role)
-        ? prev.roles.filter((r) => r !== role)
-        : [...prev.roles, role],
+      role: prev.role.includes(role)
+        ? prev.role.filter((r) => r !== role)
+        : [...prev.role, role],
     }));
   };
 
   return (
-    <form onSubmit={handleSubmit} className="">
+    <form onSubmit={handleSubmit} className="space-y-4">
+      {/* Show general errors if any */}
+      {errors.general && errors.general.length > 0 && (
+        <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg">
+          {errors.general.map((error, index) => (
+            <p key={index} className="text-sm">
+              {error}
+            </p>
+          ))}
+        </div>
+      )}
+
+      <div>
+        <label className="block text-sm font-medium text-neutral-700 mb-1">
+          Full Name
+        </label>
+        <input
+          type="text"
+          value={formData.full_name}
+          onChange={(e) =>
+            setFormData({ ...formData, full_name: e.target.value })
+          }
+          className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          required
+        />
+      </div>
+
       <div>
         <label className="block text-sm font-medium text-neutral-700 mb-1">
           Email
@@ -77,10 +223,25 @@ const AddUserForm = ({ onClose }) => {
           type="email"
           value={formData.email}
           onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-          className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500
+            ${
+              touched.email && errors.email?.length > 0
+                ? "border-red-500 focus:ring-red-500 focus:border-red-500"
+                : "border-neutral-300"
+            }`}
           required
         />
+        {touched.email && errors.email?.length > 0 && (
+          <div className="mt-1">
+            {errors.email.map((error, index) => (
+              <p key={index} className="text-red-500 text-sm">
+                {error}
+              </p>
+            ))}
+          </div>
+        )}
       </div>
+
       <div>
         <label className="block text-sm font-medium text-neutral-700 mb-1">
           Password
@@ -88,13 +249,27 @@ const AddUserForm = ({ onClose }) => {
         <input
           type="password"
           value={formData.password}
-          onChange={(e) =>
-            setFormData({ ...formData, password: e.target.value })
-          }
-          className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          onChange={handlePasswordChange}
+          onBlur={() => handleBlur("password")}
+          className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500
+            ${
+              touched.password && errors.password.length > 0
+                ? "border-red-500 focus:ring-red-500 focus:border-red-500"
+                : "border-neutral-300"
+            }`}
           required
         />
+        {touched.password && errors.password.length > 0 && (
+          <div className="mt-1">
+            {errors.password.map((error, index) => (
+              <p key={index} className="text-red-500 text-sm">
+                {error}
+              </p>
+            ))}
+          </div>
+        )}
       </div>
+
       <div>
         <label className="block text-sm font-medium text-neutral-700 mb-1">
           Confirm Password
@@ -102,32 +277,46 @@ const AddUserForm = ({ onClose }) => {
         <input
           type="password"
           value={formData.password2}
-          onChange={(e) =>
-            setFormData({ ...formData, password2: e.target.value })
-          }
-          className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          onChange={handleConfirmPasswordChange}
+          onBlur={() => handleBlur("password2")}
+          className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500
+            ${
+              touched.password2 && errors.password2.length > 0
+                ? "border-red-500 focus:ring-red-500 focus:border-red-500"
+                : "border-neutral-300"
+            }`}
           required
         />
+        {touched.password2 && errors.password2.length > 0 && (
+          <div className="mt-1">
+            {errors.password2.map((error, index) => (
+              <p key={index} className="text-red-500 text-sm">
+                {error}
+              </p>
+            ))}
+          </div>
+        )}
       </div>
+
       <div>
         <label className="block text-sm font-medium text-neutral-700 mb-1">
           Roles (Select multiple)
         </label>
         <div className="space-y-2">
-          {["Designer", "Verifier", "Approver"].map((role) => (
-            <label key={role} className="flex items-center space-x-2">
+          {["Designer", "Verifier", "Approver"].map((rol) => (
+            <label key={rol} className="flex items-center space-x-2">
               <input
                 type="checkbox"
-                checked={formData.roles.includes(role)}
-                onChange={() => handleRoleChange(role)}
+                checked={formData.role.includes(rol)}
+                onChange={() => handleRoleChange(rol)}
                 className="rounded border-neutral-300 text-blue-600 focus:ring-blue-500"
               />
-              <span className="text-sm text-neutral-700">{role}</span>
+              <span className="text-sm text-neutral-700">{rol}</span>
             </label>
           ))}
         </div>
       </div>
-      {error && <p className="text-red-500 text-sm">{error}</p>}
+
       <div className="flex justify-end space-x-3 pt-4">
         <button
           type="button"
@@ -138,8 +327,13 @@ const AddUserForm = ({ onClose }) => {
         </button>
         <button
           type="submit"
-          disabled={loading}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+          disabled={loading || !isFormValid()}
+          className={`px-4 py-2 bg-blue-600 text-white rounded-lg transition-colors
+            ${
+              loading || !isFormValid()
+                ? "opacity-50 cursor-not-allowed"
+                : "hover:bg-blue-700"
+            }`}
         >
           {loading ? "Adding..." : "Add User"}
         </button>

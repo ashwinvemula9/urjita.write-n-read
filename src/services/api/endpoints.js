@@ -29,32 +29,6 @@ axiosInstance.interceptors.request.use(
   }
 );
 
-// Response interceptor
-axiosInstance.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      // Clear user data
-      localStorage.removeItem("user");
-
-      // Show session expired toast
-      toast.error("Session expired. Please login again.", {});
-
-      // Redirect to login page
-      // Using window.location to ensure complete page refresh
-      window.location.href = "/login";
-
-      return Promise.reject(new Error("Session expired"));
-    }
-
-    if (error.response && error.response.status === 403) {
-      // Handle CORS error
-      console.error("CORS error:", error);
-    }
-    return Promise.reject(error);
-  }
-);
-
 // Auth API
 export const authAPI = {
   // Sample Request:
@@ -69,6 +43,7 @@ export const authAPI = {
       const response = await axiosInstance.post("/auth/login/", credentials);
       return response.data;
     } catch (error) {
+      console.log("error", error);
       if (error.response?.status === 401) {
         localStorage.removeItem("accessToken");
         localStorage.removeItem("refreshToken");
@@ -92,17 +67,31 @@ export const authAPI = {
   // }
   register: async (userData) => {
     try {
-      const response = await axiosInstance.post("/auth/register/", userData);
-      if (response?.access && response?.refresh) {
-        localStorage.setItem("accessToken", response.access);
-        localStorage.setItem("refreshToken", response.refresh);
-      }
+      const response = await axiosInstance.post("/auth/register/", {
+        email: userData.email,
+        password: userData.password,
+        password2: userData.password2,
+        full_name: userData.full_name,
+        role: userData.role, // Make sure we're sending roles array
+      });
       return response.data;
     } catch (error) {
-      const errorMessage =
-        error.response?.data?.message ||
-        "Registration failed. Please try again.";
-      throw new Error(errorMessage);
+      // Extract error messages from response
+      if (error.response?.data) {
+        const errorData = error.response.data;
+        // If the error data contains validation errors
+        if (typeof errorData === "object") {
+          const formattedErrors = {};
+          Object.keys(errorData).forEach((key) => {
+            formattedErrors[key] = Array.isArray(errorData[key])
+              ? errorData[key]
+              : [errorData[key]];
+          });
+          throw formattedErrors;
+        }
+      }
+      // For other types of errors
+      throw new Error("Registration failed. Please try again.");
     }
   },
 
@@ -437,36 +426,6 @@ export const verifierAPI = {
 };
 
 // Error Handler
-export const ErrorHandler = {
-  handle: (error) => {
-    if (error.response) {
-      // Handle 401 Unauthorized error
-      if (error.response.status === 401) {
-        localStorage.removeItem("user");
-        // You might want to redirect to login page or trigger a logout event here
-      }
-
-      return {
-        status: error.response.status,
-        message: error.response.message || "An error occurred",
-        data: error.response,
-      };
-    } else if (error.request) {
-      // Request made but no response
-      return {
-        status: 503,
-        message: "Service unavailable",
-        data: null,
-      };
-    }
-    // Something else went wrong
-    return {
-      status: 500,
-      message: error.message || "Unknown error occurred",
-      data: null,
-    };
-  },
-};
 
 export const approverAPI = {
   // Get approver template with query params

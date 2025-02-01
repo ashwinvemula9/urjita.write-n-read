@@ -197,37 +197,34 @@ const PCBSpecifications = ({ formData, apiData, handleFieldChange }) => {
                 subCategoriesTwo[selectedSubcategoryId] && (
                   <div className="mt-2 pt-2 border-t border-gray-100">
                     <div className="grid grid-cols-2 gap-2">
-                      {subCategoriesTwo[selectedSubcategoryId].map((subTwo) => (
-                        <div key={subTwo.id}>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            {subTwo.sub_2_category_name}
-                            <span className="text-red-500 ml-1">*</span>
-                          </label>
-                          <Select
-                            options={subCategoriesTwo[
-                              selectedSubcategoryId
-                            ].map((option) => ({
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          {selectedSubcategory.name}
+                          <span className="text-red-500 ml-1">*</span>
+                        </label>
+                        <Select
+                          options={subCategoriesTwo[selectedSubcategoryId].map(
+                            (option) => ({
                               value: option.id,
                               label: option.sub_2_category_name,
-                            }))}
-                            value={
-                              subCategoriesTwoSelections[
-                                `${selectedSubcategoryId}_${subTwo.id}`
-                              ] || ""
-                            }
-                            onChange={(value) => {
-                              setSubCategoriesTwoSelections((prev) => ({
-                                ...prev,
-                                [`${selectedSubcategoryId}_${subTwo.id}`]:
-                                  value,
-                              }));
-                            }}
-                            required
-                            placeholder={`Select ${subTwo.sub_2_category_name}`}
-                            className="min-h-[36px]"
-                          />
-                        </div>
-                      ))}
+                            })
+                          )}
+                          value={
+                            subCategoriesTwoSelections[
+                              `${selectedSubcategoryId}`
+                            ] || ""
+                          }
+                          onChange={(value) => {
+                            setSubCategoriesTwoSelections((prev) => ({
+                              ...prev,
+                              [`${selectedSubcategoryId}`]: value,
+                            }));
+                          }}
+                          required
+                          placeholder={`Select`}
+                          className="min-h-[36px]"
+                        />
+                      </div>
                     </div>
                   </div>
                 )}
@@ -244,6 +241,28 @@ const PCBSpecifications = ({ formData, apiData, handleFieldChange }) => {
       )}
     </FormSection>
   );
+};
+
+const toastConfig = {
+  position: "top-center",
+  autoClose: 3000,
+  hideProgressBar: false,
+  closeOnClick: true,
+  pauseOnHover: true,
+  draggable: true,
+  progress: undefined,
+  className: "custom-toast",
+  style: {
+    background: "white",
+    color: "#1f2937",
+    borderRadius: "0.75rem",
+    padding: "1rem",
+    boxShadow:
+      "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
+    minWidth: "300px",
+    textAlign: "center",
+  },
+  transition: "slide",
 };
 
 const DesignerInterface = () => {
@@ -308,6 +327,7 @@ const DesignerInterface = () => {
         ...prev,
         initialData: err.message || "Failed to load initial data",
       }));
+      toast.error("Failed to load initial data", toastConfig);
     } finally {
       setLoadingStates((prev) => ({ ...prev, initialData: false }));
     }
@@ -346,7 +366,10 @@ const DesignerInterface = () => {
         ...prev,
         rules: "Failed to load design rules",
       }));
-      toast.error("Failed to load design rules. Please try again.");
+      toast.error(
+        "Failed to load design rules. Please try again.",
+        toastConfig
+      );
     } finally {
       setLoadingStates((prev) => ({ ...prev, rules: false }));
     }
@@ -431,7 +454,7 @@ const DesignerInterface = () => {
 
     try {
       const response = await cadAPI.createTemplate(transformedData);
-      toast.success("Template created successfully!");
+      toast.success("Successfully submitted!", toastConfig);
       return response;
     } catch (error) {
       console.error("Error creating template:", error);
@@ -466,7 +489,7 @@ const DesignerInterface = () => {
         ...prev,
         submission: err.message || "Failed to submit form",
       }));
-      toast.error(err.message || "Failed to submit form");
+      toast.error(err.message || "Failed to submit form", toastConfig);
     } finally {
       setLoadingStates((prev) => ({ ...prev, submission: false }));
     }

@@ -154,53 +154,6 @@ const VerifierInterface = () => {
     navigate("/");
   };
 
-  const SuccessModal = () => (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-      <div className="bg-white rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl">
-        <div className="flex flex-col items-center text-center">
-          <div className="success-checkmark mb-6">
-            <div className="check-icon">
-              <span className="icon-line line-tip"></span>
-              <span className="icon-line line-long"></span>
-              <div className="icon-circle"></div>
-              <div className="icon-fix"></div>
-            </div>
-          </div>
-
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">
-            Successfully Submitted!
-          </h2>
-          <p className="text-gray-600 mb-8">
-            Your PCB verification has been successfully completed.
-          </p>
-
-          <div className="flex gap-4 w-full max-w-xs">
-            <button
-              onClick={() =>
-                generatePDF(
-                  formData,
-                  apiData.verifyResults,
-                  apiData.specifications
-                )
-              }
-              className="flex items-center justify-center gap-2 px-4 py-2 w-1/2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
-            >
-              <FileText className="h-4 w-4" />
-              <span>Export</span>
-            </button>
-            <button
-              onClick={goHome}
-              className="flex items-center justify-center gap-2 px-4 py-2 w-1/2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              <Home className="h-4 w-4" />
-              <span>Home</span>
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
   const handleSubmit = async () => {
     setLoading((prev) => ({ ...prev, submission: true }));
     try {
@@ -235,7 +188,7 @@ const VerifierInterface = () => {
       setApiData((prev) => ({ ...prev, verifyResults: results.res }));
       setCurrentStep((prev) => prev + 1);
       setSubmitted(true);
-      toast.success("Template created successfully!");
+      toast.success("Successfully submitted the details!");
     } catch (error) {
       toast.error(
         error.message || "An error occurred while creating the template"
@@ -383,21 +336,26 @@ const VerifierInterface = () => {
                   key={field.id}
                   label={field.field_name}
                   type="number"
+                  min="0"
+                  step="any"
                   value={
                     formData[STEPS.VERIFIER_FIELDS].verifierQueryData[
                       field.id
-                    ] || ""
+                    ] ?? ""
                   }
-                  onChange={(value) =>
-                    handleFieldChange(
-                      STEPS.VERIFIER_FIELDS,
-                      "verifierQueryData",
-                      {
-                        ...formData[STEPS.VERIFIER_FIELDS].verifierQueryData,
-                        [field.id]: value,
-                      }
-                    )
-                  }
+                  onChange={(value) => {
+                    const numValue = Number(value);
+                    if (value === "" || (!isNaN(numValue) && numValue >= 0)) {
+                      handleFieldChange(
+                        STEPS.VERIFIER_FIELDS,
+                        "verifierQueryData",
+                        {
+                          ...formData[STEPS.VERIFIER_FIELDS].verifierQueryData,
+                          [field.id]: value === "" ? "" : numValue,
+                        }
+                      );
+                    }
+                  }}
                   required
                 />
               ))
@@ -607,15 +565,42 @@ const VerifierInterface = () => {
 
         <div className="px-4 sm:px-6 md:px-8 py-4 border-t border-neutral-200">
           <div className="max-w-7xl mx-auto flex justify-between">
-            <Button
-              variant="secondary"
-              onClick={() => setCurrentStep((prev) => prev - 1)}
-              disabled={currentStep === 0}
-            >
-              Previous
-            </Button>
+            {!submitted && currentStep > 0 && (
+              <Button
+                variant="secondary"
+                onClick={() => setCurrentStep((prev) => prev - 1)}
+                disabled={currentStep === 0}
+              >
+                Previous
+              </Button>
+            )}
 
-            {currentStep < STEP_ORDER.length - 1 && (
+            {currentStep === STEP_ORDER.length - 1 ? (
+              <div className="flex gap-4 w-full justify-center">
+                <Button
+                  variant="secondary"
+                  onClick={() =>
+                    generatePDF(
+                      formData,
+                      apiData.verifyResults,
+                      apiData.specifications
+                    )
+                  }
+                  className="flex items-center gap-2"
+                >
+                  <FileText className="w-4 h-4" />
+                  Export PDF
+                </Button>
+                <Button
+                  variant="primary"
+                  onClick={goHome}
+                  className="flex items-center gap-2"
+                >
+                  <Home className="w-4 h-4" />
+                  Go to Home
+                </Button>
+              </div>
+            ) : (
               <Button
                 variant="primary"
                 onClick={
@@ -640,7 +625,6 @@ const VerifierInterface = () => {
           </div>
         </div>
       </div>
-      {submitted && <SuccessModal />}
     </div>
   );
 };

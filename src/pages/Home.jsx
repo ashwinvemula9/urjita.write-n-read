@@ -1,57 +1,48 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
-import { FileText } from "lucide-react";
-import { FeatureCard } from "../components/common/FeatureCard";
+import AdminInterface from "./rightdraw-interfaces/AdminInterface";
+import FeatureGroup from "../components/features/FeatureGroup";
+import { getFeatures } from "../config/features";
 
 const Home = () => {
   const navigate = useNavigate();
-  console.log("IN HOME");
   const userString = localStorage.getItem("user");
   const user = userString ? JSON.parse(userString) : null;
-  if (!user) {
-    navigate("/login");
-  }
-  console.log("in homepage", user);
-  let description = "";
-  if (user.role === "CADesigner") {
-    description = "Design and manage components.";
-  } else if (user.role === "admin") {
-    description =
-      "Manage users and permissions with our advanced user management tools.";
-  } else if (user.role === "Verifier") {
-    description = "Verify the designs";
-  } else if (user.role === "Approver") {
-    description = "Approve the designs";
+
+  useEffect(() => {
+    if (!user) {
+      navigate("/login");
+    }
+  }, [user, navigate]);
+
+  // If user is an Admin, show AdminInterface
+  if (user && Array.isArray(user.role) && user.role.includes("Admin")) {
+    return <AdminInterface />;
   }
 
-  const features = [
-    {
-      title: "RightDraw",
-      description: description,
-      icon: FileText,
-      path: "/right-draw",
-    },
-  ];
+  const features = getFeatures(user);
 
   return user ? (
-    <div className="bg-neutral-900 h-full">
-      <div className="max-w-7xl mx-auto px-4 py-8 pt-20">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">
-            Welcome back, {user.role}
+    <div className="min-h-screen bg-gradient-to-b from-neutral-900 to-neutral-800">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 pt-24">
+        <div className="mb-10">
+          <h1 className="text-4xl font-bold text-white mb-3">
+            Welcome back, {user.full_name}
           </h1>
-          <p className="text-neutral-400">
+          <p className="text-lg text-neutral-300">
             Select a tool to get started with your project
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {features.map((feature, index) => (
-            <FeatureCard
+            <FeatureGroup
               key={index}
-              {...feature}
-              onClick={() => navigate(feature.path)}
+              feature={{
+                ...feature,
+                icon: feature.title === "RightDraw" ? null : feature.icon,
+              }}
             />
           ))}
         </div>
