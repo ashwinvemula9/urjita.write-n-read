@@ -454,7 +454,7 @@ const DesignerInterface = () => {
 
     try {
       const response = await cadAPI.createTemplate(transformedData);
-      toast.success("Successfully submitted!", toastConfig);
+      toast.success("Successfully submitted!");
       return response;
     } catch (error) {
       console.error("Error creating template:", error);
@@ -489,7 +489,7 @@ const DesignerInterface = () => {
         ...prev,
         submission: err.message || "Failed to submit form",
       }));
-      toast.error(err.message || "Failed to submit form", toastConfig);
+      toast.error(err.message || "Failed to submit form");
     } finally {
       setLoadingStates((prev) => ({ ...prev, submission: false }));
     }
