@@ -18,6 +18,7 @@ import {
 import Modal from "../../components/common/Modal";
 import PageLayout from "../../components/layout/PageLayout";
 import generatePDF from "../../pages/pdf-creators/PDFDocumentApproverInterface";
+import { templateAPI } from "../../services/api/endpoints";
 
 const buttonVariants = {
   success: `
@@ -121,12 +122,17 @@ const ApproverInterface = () => {
   const [rejectionComment, setRejectionComment] = useState("");
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [actionType, setActionType] = useState("");
+  const [templateExists, setTemplateExists] = useState(false);
+  const [checkingTemplate, setCheckingTemplate] = useState(false);
 
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({
       ...prev,
       [field]: value,
     }));
+
+    // Reset template existence when any field changes
+    setTemplateExists(false);
   };
 
   const handleFetchTemplate = async () => {
@@ -147,14 +153,25 @@ const ApproverInterface = () => {
       return;
     }
 
-    setLoading(true);
+    setCheckingTemplate(true);
     try {
+      // First check if template exists
+      const templateCheck = await templateAPI.checkTemplateExists(formData);
+      if (templateCheck.approver_exists) {
+        setTemplateExists(true);
+        toast.error("A template with these details already exists!");
+        return;
+      }
+
+      // If template doesn't exist, proceed with fetching template
+      setLoading(true);
       const response = await approverAPI.getApproverTemplate(formData);
       setTemplateData(response.res);
     } catch (error) {
       console.log("error", error);
       toast.error(error.message);
     } finally {
+      setCheckingTemplate(false);
       setLoading(false);
     }
   };
@@ -322,6 +339,20 @@ const ApproverInterface = () => {
     // Reset states after PDF generation
     // Reset other states as needed
   };
+
+  // Add this new function to validate all required fields
+  const areAllRequiredFieldsFilled = () => {
+    const requiredFields = [
+      "oppNumber",
+      "opuNumber",
+      "modelName",
+      "partNumber",
+      "revisionNumber",
+      "component",
+    ];
+    return requiredFields.every((field) => formData[field]);
+  };
+
   console.log("templateData", templateData);
   return (
     <div className="min-h-screen bg-neutral-900 p-4 sm:p-8 md:p-16">
@@ -407,18 +438,27 @@ const ApproverInterface = () => {
                   />
                 </div>
 
-                <div className="flex justify-end">
+                <div className="flex justify-end space-x-4 mt-6">
                   <Button
+                    variant="primary"
                     onClick={handleFetchTemplate}
-                    disabled={loading}
-                    className="px-8 py-3 rounded-lg font-medium text-white bg-primary-600 hover:bg-primary-700 
-                      disabled:bg-primary-300 disabled:cursor-not-allowed transition-all duration-200 ease-in-out 
-                      flex items-center gap-2"
+                    disabled={
+                      loading ||
+                      checkingTemplate ||
+                      templateExists ||
+                      !areAllRequiredFieldsFilled()
+                    }
+                    className="flex items-center gap-2"
                   >
-                    {loading ? (
+                    {checkingTemplate ? (
                       <>
-                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white" />
-                        <span>Fetching Template...</span>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
+                        <span>Checking...</span>
+                      </>
+                    ) : loading ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
+                        <span>Fetching...</span>
                       </>
                     ) : (
                       "Fetch Template"
@@ -662,6 +702,12 @@ const ApproverInterface = () => {
                   Reject All
                 </button>
               </div>
+            </div>
+          )}
+          {templateExists && (
+            <div className="mt-2 text-red-500 text-sm">
+              A template with these details already exists. Please modify the
+              details
             </div>
           )}
         </div>

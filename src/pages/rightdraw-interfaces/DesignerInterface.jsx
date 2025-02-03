@@ -23,6 +23,7 @@ import { useNavigate } from "react-router-dom";
 import { cadAPI } from "../../services/api/endpoints";
 import { saveAs } from "file-saver";
 import { pdf } from "@react-pdf/renderer";
+import { templateAPI } from "../../services/api/endpoints";
 
 // Constants
 const STEPS = {
@@ -243,28 +244,6 @@ const PCBSpecifications = ({ formData, apiData, handleFieldChange }) => {
   );
 };
 
-const toastConfig = {
-  position: "top-center",
-  autoClose: 3000,
-  hideProgressBar: false,
-  closeOnClick: true,
-  pauseOnHover: true,
-  draggable: true,
-  progress: undefined,
-  className: "custom-toast",
-  style: {
-    background: "white",
-    color: "#1f2937",
-    borderRadius: "0.75rem",
-    padding: "1rem",
-    boxShadow:
-      "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
-    minWidth: "300px",
-    textAlign: "center",
-  },
-  transition: "slide",
-};
-
 const DesignerInterface = () => {
   // Form State
   const [currentStep, setCurrentStep] = useState(0);
@@ -289,6 +268,8 @@ const DesignerInterface = () => {
     submission: null,
   });
   const navigate = useNavigate();
+  const [templateExists, setTemplateExists] = useState(false);
+  const [checkingTemplate, setCheckingTemplate] = useState(false);
 
   // Load saved form data
   useEffect(() => {
@@ -327,7 +308,7 @@ const DesignerInterface = () => {
         ...prev,
         initialData: err.message || "Failed to load initial data",
       }));
-      toast.error("Failed to load initial data", toastConfig);
+      toast.error("Failed to load initial data");
     } finally {
       setLoadingStates((prev) => ({ ...prev, initialData: false }));
     }
@@ -366,10 +347,7 @@ const DesignerInterface = () => {
         ...prev,
         rules: "Failed to load design rules",
       }));
-      toast.error(
-        "Failed to load design rules. Please try again.",
-        toastConfig
-      );
+      toast.error("Failed to load design rules. Please try again.");
     } finally {
       setLoadingStates((prev) => ({ ...prev, rules: false }));
     }
@@ -421,8 +399,7 @@ const DesignerInterface = () => {
   };
 
   // Event Handlers
-  const handleFieldChange = useCallback((step, field, value) => {
-    setIsDirty(true);
+  const handleFieldChange = (step, field, value) => {
     setFormData((prev) => ({
       ...prev,
       [step]: {
@@ -430,7 +407,12 @@ const DesignerInterface = () => {
         [field]: value,
       },
     }));
-  }, []);
+
+    // Reset template existence when any field in basic info changes
+    if (step === STEPS.BASIC_INFO) {
+      setTemplateExists(false);
+    }
+  };
 
   const currentStepKey = STEP_ORDER[currentStep];
   const isCurrentStepValid =
@@ -770,6 +752,25 @@ const DesignerInterface = () => {
     </div>
   );
 
+  const checkTemplateExistence = async () => {
+    setCheckingTemplate(true);
+    try {
+      const response = await templateAPI.checkTemplateExists(
+        formData[STEPS.BASIC_INFO]
+      );
+      if (response.designer_exists) {
+        setTemplateExists(true);
+        toast.error("A template with these details already exists!");
+      } else {
+        setCurrentStep((prev) => prev + 1);
+      }
+    } catch (error) {
+      toast.error(error.message);
+    } finally {
+      setCheckingTemplate(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-neutral-900 p-4 sm:p-8 md:p-16">
       <div className="bg-white rounded-xl shadow-sm border border-neutral-200 w-full max-w-7xl mx-auto">
@@ -937,14 +938,35 @@ const DesignerInterface = () => {
               ) : (
                 <Button
                   variant="primary"
-                  onClick={() => setCurrentStep((prev) => prev + 1)}
-                  disabled={!isCurrentStepValid}
+                  onClick={
+                    currentStep === 0
+                      ? checkTemplateExistence
+                      : () => setCurrentStep((prev) => prev + 1)
+                  }
+                  disabled={
+                    !isCurrentStepValid ||
+                    checkingTemplate ||
+                    (currentStep === 0 && templateExists)
+                  }
                 >
-                  Next
+                  {checkingTemplate ? (
+                    <div className="flex items-center gap-2">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
+                      <span>Checking...</span>
+                    </div>
+                  ) : (
+                    "Next"
+                  )}
                 </Button>
               )}
             </div>
           </div>
+          {currentStep === 0 && templateExists && (
+            <div className="mt-2 text-red-500 text-sm">
+              A template with these details already exists. Please modify the
+              details
+            </div>
+          )}
         </div>
       </div>
       {submitted && <SuccessModal />}

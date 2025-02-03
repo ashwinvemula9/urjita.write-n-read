@@ -516,3 +516,26 @@ export const approverAPI = {
     }
   },
 };
+
+export const templateAPI = {
+  checkTemplateExists: async (params) => {
+    try {
+      const response = await axiosInstance.get("/right-draw/check-template/", {
+        params: {
+          oppNumber: params.oppNumber,
+          opuNumber: params.opuNumber,
+          eduNumber: params.eduNumber,
+          modelName: params.modelName,
+          partNumber: params.partNumber,
+          revisionNumber: params.revisionNumber,
+          component: params.component,
+        },
+      });
+      return response.data;
+    } catch (error) {
+      const errorMessage =
+        error.response?.data?.message || "Failed to check template existence.";
+      throw new Error(errorMessage);
+    }
+  },
+};

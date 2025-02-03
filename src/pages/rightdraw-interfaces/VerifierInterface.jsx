@@ -19,6 +19,7 @@ import {
   pcbAPI,
   componentsAPI,
   verifierAPI,
+  templateAPI,
 } from "../../services/api/endpoints";
 import { toast } from "react-toastify";
 import PageLayout from "../../components/layout/PageLayout";
@@ -92,6 +93,8 @@ const VerifierInterface = () => {
   const [errors, setErrors] = useState({});
   const [hasVerifierFields, setHasVerifierFields] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [templateExists, setTemplateExists] = useState(false);
+  const [checkingTemplate, setCheckingTemplate] = useState(false);
   const navigate = useNavigate();
 
   console.log("formData", formData);
@@ -148,6 +151,11 @@ const VerifierInterface = () => {
         [field]: value,
       },
     }));
+
+    // Reset template existence when any field in basic info changes
+    if (step === STEPS.BASIC_INFO) {
+      setTemplateExists(false);
+    }
   };
 
   const goHome = () => {
@@ -195,6 +203,25 @@ const VerifierInterface = () => {
       );
     } finally {
       setLoading((prev) => ({ ...prev, submission: false }));
+    }
+  };
+
+  const checkTemplateExistence = async () => {
+    setCheckingTemplate(true);
+    try {
+      const response = await templateAPI.checkTemplateExists(
+        formData[STEPS.BASIC_INFO]
+      );
+      if (response.verifier_exists) {
+        setTemplateExists(true);
+        toast.error("A template with these details already exists!");
+      } else {
+        setCurrentStep((prev) => prev + 1);
+      }
+    } catch (error) {
+      toast.error(error.message);
+    } finally {
+      setCheckingTemplate(false);
     }
   };
 
@@ -262,6 +289,14 @@ const VerifierInterface = () => {
               }
               required
             />
+            {templateExists && (
+              <div className="col-span-2 mt-2">
+                <p className="text-red-500 text-sm">
+                  A template with these details already exists. Please modify
+                  the details
+                </p>
+              </div>
+            )}
           </FormSection>
         );
 
@@ -606,13 +641,24 @@ const VerifierInterface = () => {
               <Button
                 variant="primary"
                 onClick={
-                  currentStep === STEP_ORDER.length - 2
+                  currentStep === 0
+                    ? checkTemplateExistence
+                    : currentStep === STEP_ORDER.length - 2
                     ? handleSubmit
                     : () => setCurrentStep((prev) => prev + 1)
                 }
-                disabled={loading.submission}
+                disabled={
+                  loading.submission ||
+                  checkingTemplate ||
+                  (currentStep === 0 && templateExists)
+                }
               >
-                {loading.submission ? (
+                {checkingTemplate ? (
+                  <div className="flex items-center gap-2">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
+                    <span>Checking...</span>
+                  </div>
+                ) : loading.submission ? (
                   <div className="flex items-center gap-2">
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
                     <span>Submitting...</span>
