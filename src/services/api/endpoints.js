@@ -402,8 +402,12 @@ export const verifierAPI = {
       );
       return response.data;
     } catch (error) {
+      console.log("error here", error);
       const errorMessage =
         error.response?.data?.message ||
+        error.response?.data?.non_field_errors.reduce((eachMessage, acc) => {
+          `${acc}  ${eachMessage}`;
+        }) ||
         error.response?.data ||
         "Failed to create template.";
       throw new Error(errorMessage);

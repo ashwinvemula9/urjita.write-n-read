@@ -122,6 +122,14 @@ const AddUserForm = ({ onClose }) => {
     if (!isFormValid()) return;
 
     setLoading(true);
+
+    console.log({
+      email: formData.email,
+      password: formData.password,
+      password2: formData.password2,
+      full_name: formData.full_name,
+      role: formData.role,
+    });
     try {
       await authAPI.register({
         email: formData.email,
@@ -130,6 +138,7 @@ const AddUserForm = ({ onClose }) => {
         full_name: formData.full_name,
         role: formData.role,
       });
+
       toast.success("User Added Successfully");
       onClose();
     } catch (err) {
@@ -303,7 +312,7 @@ const AddUserForm = ({ onClose }) => {
           Roles (Select multiple)
         </label>
         <div className="space-y-2">
-          {["Designer", "Verifier", "Approver"].map((rol) => (
+          {["CADesigner", "Verifier", "Approver"].map((rol) => (
             <label key={rol} className="flex items-center space-x-2">
               <input
                 type="checkbox"

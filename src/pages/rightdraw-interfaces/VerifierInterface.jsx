@@ -565,18 +565,20 @@ const VerifierInterface = () => {
 
         <div className="px-4 sm:px-6 md:px-8 py-4 border-t border-neutral-200">
           <div className="max-w-7xl mx-auto flex justify-between">
-            {!submitted && currentStep > 0 && (
-              <Button
-                variant="secondary"
-                onClick={() => setCurrentStep((prev) => prev - 1)}
-                disabled={currentStep === 0}
-              >
-                Previous
-              </Button>
-            )}
+            <div>
+              {!submitted && currentStep > 0 && (
+                <Button
+                  variant="secondary"
+                  onClick={() => setCurrentStep((prev) => prev - 1)}
+                  disabled={currentStep === 0}
+                >
+                  Previous
+                </Button>
+              )}
+            </div>
 
             {currentStep === STEP_ORDER.length - 1 ? (
-              <div className="flex gap-4 w-full justify-center">
+              <div className="flex gap-4">
                 <Button
                   variant="secondary"
                   onClick={() =>
