@@ -271,4 +271,57 @@ const FormSection = ({
   </div>
 );
 
-export { Input, Select, Checkbox, Button, Card, FormSection };
+const TextArea = ({
+  label,
+  id,
+  value,
+  onChange,
+  type = "text",
+  required = false,
+  error = null,
+  placeholder = "",
+  disabled = false,
+  className = "",
+  containerClassName = "",
+  labelClassName = "",
+  errorClassName = "",
+}) => {
+  const inputId = id || React.useId();
+
+  return (
+    <div className={`flex flex-col gap-1 ${containerClassName}`}>
+      {label && (
+        <label
+          htmlFor={inputId}
+          className={`text-sm font-medium text-gray-700 ${labelClassName}`}
+        >
+          {label} {required && <span className="text-red-500">*</span>}
+        </label>
+      )}
+      <textarea
+        id={inputId}
+        type={type}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        disabled={disabled}
+        rows={4}
+        className={`
+          w-full px-3 py-2 border rounded-md
+          focus:outline-none focus:ring-2 focus:ring-blue-500
+          disabled:bg-gray-100 disabled:cursor-not-allowed
+          ${error ? "border-red-500" : "border-gray-300"}
+          ${className}
+        `}
+        required={required}
+      />
+      {error && (
+        <span className={`text-sm text-red-500 ${errorClassName}`}>
+          {error}
+        </span>
+      )}
+    </div>
+  );
+};
+
+export { Input, Select, Checkbox, Button, Card, FormSection, TextArea };

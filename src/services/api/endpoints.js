@@ -115,10 +115,9 @@ export const authAPI = {
   // }
   requestPasswordReset: async (email) => {
     try {
-      const response = await axiosInstance.post(
-        "/right-draw/request-reset-password/",
-        { email }
-      );
+      const response = await axiosInstance.post("right-draw/reset-password/", {
+        email,
+      });
       return response.data;
     } catch (error) {
       const errorMessage =

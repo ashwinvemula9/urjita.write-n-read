@@ -51,7 +51,7 @@ const Layout = () => {
             style={{
               cursor: "pointer", // Make the close button clickable.
               fontSize: "20px", // Slightly larger close icon for better visibility.
-              color: "#FF6F61", // Accent color for the close icon, giving it a modern look.
+              color: "#d9d9d9", // Accent color for the close icon, giving it a modern look.
             }}
           >
             &#10005; {/* Custom close icon ("×") */}

@@ -150,7 +150,7 @@ const PDFDocumentVerifierInterface = ({
     <Document>
       <Page size="A4" style={styles.page}>
         <View style={styles.header}>
-          <Text style={styles.title}>PCB Design Specification Document</Text>
+          <Text style={styles.title}>PCB Verification Document</Text>
           <Text style={styles.subtitle}>Generated on {timestamp}</Text>
           <Text style={styles.metadata}>Created by: {user?.full_name}</Text>
         </View>

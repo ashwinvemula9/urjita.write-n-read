@@ -14,6 +14,7 @@ import {
   FormSection,
   Input,
   Select,
+  TextArea,
 } from "../../components/common/ReusableComponents";
 import Modal from "../../components/common/Modal";
 import PageLayout from "../../components/layout/PageLayout";
@@ -353,7 +354,20 @@ const ApproverInterface = () => {
     return requiredFields.every((field) => formData[field]);
   };
 
-  console.log("templateData", templateData);
+  console.log("templateData", templateData, rejectionComment);
+
+  const { isDesignFieldsDataAvailable, isVerifiedQueryDataAvailable } =
+    React.useMemo(() => {
+      return {
+        isDesignFieldsDataAvailable:
+          templateData?.verify_design_fields_data.some(
+            (field) => !field.is_deviated
+          ),
+        isVerifiedQueryDataAvailable: templateData?.verified_query_data.some(
+          (field) => !field.is_deviated
+        ),
+      };
+    }, [templateData]);
   return (
     <div className="min-h-screen bg-neutral-900 p-4 sm:p-8 md:p-16">
       <div className="bg-white rounded-xl shadow-sm border border-neutral-200 w-full max-w-7xl mx-auto">
@@ -448,7 +462,7 @@ const ApproverInterface = () => {
                       templateExists ||
                       !areAllRequiredFieldsFilled()
                     }
-                    className="flex items-center gap-2"
+                    contentClassName="flex items-center gap-2"
                   >
                     {checkingTemplate ? (
                       <>
@@ -461,7 +475,7 @@ const ApproverInterface = () => {
                         <span>Fetching...</span>
                       </>
                     ) : (
-                      "Fetch Template"
+                      "Fetch details"
                     )}
                   </Button>
                 </div>
@@ -623,67 +637,70 @@ const ApproverInterface = () => {
                     </div>
                   )}
                 </div>
+                {(isDesignFieldsDataAvailable ||
+                  isVerifiedQueryDataAvailable) && (
+                  <div className="border-2 border-green-200 rounded-lg p-6 bg-green-50">
+                    <h2 className="text-xl font-semibold text-green-700 mb-4 flex items-center gap-2">
+                      <CheckCircle2 className="w-6 h-6" />
+                      Compliant Fields
+                    </h2>
 
-                <div className="border-2 border-green-200 rounded-lg p-6 bg-green-50">
-                  <h2 className="text-xl font-semibold text-green-700 mb-4 flex items-center gap-2">
-                    <CheckCircle2 className="w-6 h-6" />
-                    Compliant Fields
-                  </h2>
-
-                  {templateData.verify_design_fields_data.some(
-                    (field) => !field.is_deviated
-                  ) && (
-                    <div className="mb-6">
-                      <h3 className="text-lg font-medium text-gray-900 mb-3">
-                        Design Fields
-                      </h3>
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                        {templateData.verify_design_fields_data
-                          .filter((field) => !field.is_deviated)
-                          .map((field) => (
-                            <div
-                              key={field.categor_id}
-                              className="bg-white rounded-lg border border-green-200 p-4"
-                            >
-                              <h4 className="font-medium text-gray-900">
-                                {field.name}
-                              </h4>
-                              <p className="text-sm text-gray-600 mt-1">
-                                Selected Value: {field.selected_deviation_name}
-                              </p>
-                            </div>
-                          ))}
+                    {templateData.verify_design_fields_data.some(
+                      (field) => !field.is_deviated
+                    ) && (
+                      <div className="mb-6">
+                        <h3 className="text-lg font-medium text-gray-900 mb-3">
+                          Design Fields
+                        </h3>
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                          {templateData.verify_design_fields_data
+                            .filter((field) => !field.is_deviated)
+                            .map((field) => (
+                              <div
+                                key={field.categor_id}
+                                className="bg-white rounded-lg border border-green-200 p-4"
+                              >
+                                <h4 className="font-medium text-gray-900">
+                                  {field.name}
+                                </h4>
+                                <p className="text-sm text-gray-600 mt-1">
+                                  Selected Value:{" "}
+                                  {field.selected_deviation_name}
+                                </p>
+                              </div>
+                            ))}
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    )}
 
-                  {templateData.verified_query_data.some(
-                    (field) => !field.is_deviated
-                  ) && (
-                    <div>
-                      <h3 className="text-lg font-medium text-gray-900 mb-3">
-                        Query Data
-                      </h3>
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                        {templateData.verified_query_data
-                          .filter((field) => !field.is_deviated)
-                          .map((field) => (
-                            <div
-                              key={field.id}
-                              className="bg-white rounded-lg border border-green-200 p-4"
-                            >
-                              <h4 className="font-medium text-gray-900">
-                                {field.name}
-                              </h4>
-                              <p className="text-sm text-gray-600 mt-1">
-                                Value: {field.value}
-                              </p>
-                            </div>
-                          ))}
+                    {templateData.verified_query_data.some(
+                      (field) => !field.is_deviated
+                    ) && (
+                      <div>
+                        <h3 className="text-lg font-medium text-gray-900 mb-3">
+                          Query Data
+                        </h3>
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                          {templateData.verified_query_data
+                            .filter((field) => !field.is_deviated)
+                            .map((field) => (
+                              <div
+                                key={field.id}
+                                className="bg-white rounded-lg border border-green-200 p-4"
+                              >
+                                <h4 className="font-medium text-gray-900">
+                                  {field.name}
+                                </h4>
+                                <p className="text-sm text-gray-600 mt-1">
+                                  Value: {field.value}
+                                </p>
+                              </div>
+                            ))}
+                        </div>
                       </div>
-                    </div>
-                  )}
-                </div>
+                    )}
+                  </div>
+                )}
               </div>
 
               <div className="flex justify-end gap-4">
@@ -719,7 +736,7 @@ const ApproverInterface = () => {
         title="Approval Confirmation"
       >
         <div className="p-6">
-          <Input
+          <TextArea
             label="Approval Comment"
             value={approvalComment}
             onChange={setApprovalComment}
@@ -738,7 +755,7 @@ const ApproverInterface = () => {
               onClick={handleSubmit}
               disabled={loading}
             >
-              Confirm Approval
+              {loading ? "Approving..." : "Confirm Approval"}
             </Button>
           </div>
         </div>
@@ -750,7 +767,7 @@ const ApproverInterface = () => {
         title="Rejection Confirmation"
       >
         <div className="p-6">
-          <Input
+          <TextArea
             label="Rejection Comment"
             value={rejectionComment}
             onChange={setRejectionComment}
@@ -769,7 +786,7 @@ const ApproverInterface = () => {
               onClick={handleRejectSubmit}
               disabled={loading || !rejectionComment.trim()}
             >
-              Confirm Rejection
+              {loading ? "Rejecting..." : "Confirm Rejection"}
             </Button>
           </div>
         </div>
@@ -793,7 +810,7 @@ const ApproverInterface = () => {
               <Button
                 variant="secondary"
                 onClick={handleExportPDF}
-                className="flex items-center gap-2"
+                contentClassName="flex items-center gap-2"
               >
                 <FileText className="w-4 h-4" />
                 Export PDF
@@ -801,7 +818,7 @@ const ApproverInterface = () => {
               <Button
                 variant="primary"
                 onClick={() => (window.location.href = "/")}
-                className="flex items-center gap-2"
+                contentClassName="flex items-center gap-2"
               >
                 <Home className="w-4 h-4" />
                 Go Home

@@ -212,7 +212,7 @@ const PDFDocumentDesignerInterface = ({
       <Page size="A4" style={styles.page} wrap>
         <View style={styles.contentWrapper}>
           <View style={styles.header}>
-            <Text style={styles.title}>PCB Design Specification Document</Text>
+            <Text style={styles.title}>PCB Design Document</Text>
             <Text style={styles.subtitle}>Generated on {timestamp}</Text>
             <Text style={styles.metadata}>Created by: {user?.full_name}</Text>
           </View>

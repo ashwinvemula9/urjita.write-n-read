@@ -25,6 +25,7 @@ import { toast } from "react-toastify";
 import PageLayout from "../../components/layout/PageLayout";
 import generatePDF from "../pdf-creators/PDFDocumentVerifierInterface";
 import { useNavigate } from "react-router-dom";
+import { BASIC_DETAILS_LENGTH } from "../../constants";
 
 const STEPS = {
   BASIC_INFO: "basicInfo",
@@ -120,7 +121,7 @@ const VerifierInterface = () => {
 
   const fetchVerifierFields = async () => {
     const selectedSpec = formData[STEPS.PCB_SPECS].selectedSpecs[1];
-    if ([110, 111, 113].includes(Number(selectedSpec))) {
+    if ([110, 111, 128].includes(Number(selectedSpec))) {
       setLoading((prev) => ({ ...prev, verifierFields: true }));
       try {
         const fields = await verifierAPI.getVerifierFields(1, 1, selectedSpec);
@@ -410,23 +411,6 @@ const VerifierInterface = () => {
       case STEPS.VERIFY_RESULTS:
         return (
           <div className="space-y-4">
-            <div className="flex justify-end mb-4">
-              <Button
-                variant="secondary"
-                onClick={() =>
-                  generatePDF(
-                    formData,
-                    apiData.verifyResults,
-                    apiData.specifications
-                  )
-                }
-                className="flex items-center gap-2"
-              >
-                <FileText className="w-4 h-4" />
-                Export PDF
-              </Button>
-            </div>
-
             <FormSection title="Verified Query Data">
               {apiData.verifyResults?.verified_query_data.some(
                 (item) => item.is_deviated
@@ -542,6 +526,22 @@ const VerifierInterface = () => {
     }
   };
 
+  // const isFlowDisabled = () => {
+  //   const flowLengthMap = {
+  //     0: BASIC_DETAILS_LENGTH,
+  //     1 : apiData.specifications.length,
+  //     2 : apiData.verifierFields.length
+  //   };
+  //   const valuesMap = {
+  //     0 :
+  //   }
+  //   if(flowLengthMap?.[currentStep] === formData?.[]){
+
+  //   }
+  // };
+
+  // console.log({ formData });
+
   const renderStepIndicator = () => (
     <div className="flex items-center mb-2 px-4">
       {STEP_ORDER.map((stepKey, index) => (
@@ -623,7 +623,7 @@ const VerifierInterface = () => {
                       apiData.specifications
                     )
                   }
-                  className="flex items-center gap-2"
+                  contentClassName="flex items-center gap-2"
                 >
                   <FileText className="w-4 h-4" />
                   Export PDF
@@ -631,7 +631,7 @@ const VerifierInterface = () => {
                 <Button
                   variant="primary"
                   onClick={goHome}
-                  className="flex items-center gap-2"
+                  contentClassName="flex items-center gap-2"
                 >
                   <Home className="w-4 h-4" />
                   Go to Home
