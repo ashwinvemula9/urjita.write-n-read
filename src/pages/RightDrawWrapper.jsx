@@ -1,30 +1,37 @@
 import React from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import VerifierInterface from "./rightdraw-interfaces/VerifierInterface";
 import DesignerInterface from "./rightdraw-interfaces/DesignerInterface";
 import ApproverInterface from "./rightdraw-interfaces/ApproverInterface";
 import AdminInterface from "./rightdraw-interfaces/AdminInterface";
-import { useNavigate } from "react-router-dom";
 
 const RightDrawWrapper = () => {
   const navigate = useNavigate();
+  const { role } = useParams(); // Get the role from URL params
   const userString = localStorage.getItem("user");
   const user = userString ? JSON.parse(userString) : null;
 
   // Redirect if no user
   if (!user) {
     navigate("/login");
-    return null; // Add return statement to prevent further execution
+    return null;
   }
 
-  // Add check for user.role
-  if (!user.role[0]) {
-    console.error("User role is undefined");
+  // Check if user has roles
+  if (!Array.isArray(user.role) || user.role.length === 0) {
+    console.error("User roles are undefined or empty");
     return <div>Invalid User Role</div>;
   }
 
-  console.log("Current user role:", user.role);
+  // Check if the requested role is one of the user's assigned roles
+  if (!user.role.includes(role)) {
+    console.error("User does not have access to this role interface");
+    navigate("/"); // Redirect to home if role is not authorized
+    return null;
+  }
 
-  switch (user.role[0]) {
+  // Render interface based on URL role parameter
+  switch (role) {
     case "CADesigner":
       return <DesignerInterface />;
     case "Verifier":
@@ -34,7 +41,8 @@ const RightDrawWrapper = () => {
     case "Admin":
       return <AdminInterface />;
     default:
-      return <div>Access Denied: Invalid Role</div>;
+      navigate("/"); // Redirect to home if role is invalid
+      return null;
   }
 };
 

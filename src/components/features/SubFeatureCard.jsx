@@ -5,9 +5,14 @@ import { ArrowRight } from "lucide-react";
 const SubFeatureCard = ({ feature }) => {
   const navigate = useNavigate();
 
+  const handleNavigate = () => {
+    // Extract role from feature title and create path
+    navigate(`/right-draw/${feature.role}`);
+  };
+
   return (
     <button
-      onClick={() => navigate(feature.path)}
+      onClick={handleNavigate}
       className="w-full group bg-neutral-50 hover:bg-neutral-100
                  p-4 rounded-xl transition-all duration-200 
                  border border-neutral-200 hover:border-neutral-300

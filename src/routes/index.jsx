@@ -27,7 +27,7 @@ export const router = createBrowserRouter([
         ),
       },
       {
-        path: "right-draw",
+        path: "right-draw/:role",
         element: (
           <Suspense fallback={<LoadingSpinner />}>
             <ProtectedRoute>

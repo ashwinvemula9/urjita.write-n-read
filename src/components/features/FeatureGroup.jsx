@@ -17,7 +17,7 @@ const FeatureGroup = ({ feature }) => {
           <p className="text-neutral-600">{feature.description}</p>
         </div>
       </div>
-
+      {console.log("feature", feature)}
       {feature.subFeatures && feature.subFeatures.length > 0 && (
         <div className="grid grid-cols-1 gap-4">
           {feature.subFeatures.map((subFeature, index) => (

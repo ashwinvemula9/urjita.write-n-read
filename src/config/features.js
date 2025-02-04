@@ -9,13 +9,13 @@ export const getRoleFeatures = (user) => {
   roles.forEach((role) => {
     let feature = {
       icon: FileText,
-      path: "/right-draw",
     };
 
     switch (role) {
       case "CADesigner":
         feature = {
           ...feature,
+          role: "CADesigner",
           title: "Design PCB",
           description: "Create and manage PCB designs",
         };
@@ -23,6 +23,7 @@ export const getRoleFeatures = (user) => {
       case "Verifier":
         feature = {
           ...feature,
+          role: "Verifier",
           title: "Verify PCB",
           description: "Review and verify PCB designs",
         };
@@ -30,6 +31,7 @@ export const getRoleFeatures = (user) => {
       case "Approver":
         feature = {
           ...feature,
+          role: "Approver",
           title: "Approve PCB",
           description: "Approve PCB designs for production",
         };
