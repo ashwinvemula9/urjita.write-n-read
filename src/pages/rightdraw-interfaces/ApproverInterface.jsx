@@ -20,33 +20,7 @@ import Modal from "../../components/common/Modal";
 import PageLayout from "../../components/layout/PageLayout";
 import generatePDF from "../../pages/pdf-creators/PDFDocumentApproverInterface";
 import { templateAPI } from "../../services/api/endpoints";
-
-const buttonVariants = {
-  success: `
-    bg-green-600 hover:bg-green-700 text-white
-    border border-green-600
-    hover:border-green-700 
-    active:bg-green-800
-    transition-all duration-200
-    disabled:opacity-50 disabled:cursor-not-allowed
-  `,
-  danger: `
-    bg-red-600 hover:bg-red-700 text-white
-    border border-red-600
-    hover:border-red-700 
-    active:bg-red-800
-    transition-all duration-200
-    disabled:opacity-50 disabled:cursor-not-allowed
-  `,
-  secondary: `
-    bg-gray-100 hover:bg-gray-200 text-gray-700 
-    border border-gray-300
-    hover:border-gray-400 
-    active:bg-gray-300
-    transition-all duration-200
-    disabled:opacity-50 disabled:cursor-not-allowed
-  `,
-};
+import LoadingSpinner from "../../components/common/LoadingSpinner";
 
 const UpdatedSelect = ({
   label,
@@ -243,6 +217,7 @@ const ApproverInterface = () => {
 
       await approverAPI.submitApproverTemplate(submitData);
       setActionType("approved");
+      handleExportPDF();
       setShowSuccessModal(true);
       setApprovalStatus({ verifyDesignFields: {}, verifiedQueryData: {} });
       setShowApprovalModal(false);
@@ -755,7 +730,13 @@ const ApproverInterface = () => {
               onClick={handleSubmit}
               disabled={loading}
             >
-              {loading ? "Approving..." : "Confirm Approval"}
+              {loading ? (
+                <div className="flex items-center justify-center">
+                  <LoadingSpinner size="sm" />
+                </div>
+              ) : (
+                "Confirm Approval"
+              )}
             </Button>
           </div>
         </div>

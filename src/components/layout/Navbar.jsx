@@ -1,10 +1,10 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { Menu, X, LogOut, ChevronDown } from "lucide-react";
+import { Menu, X, LogOut, ChevronDown, Eye, EyeOff } from "lucide-react";
 import logo from "../../assets/logo.svg";
 import Logo from "../Images/logo";
 
-const Navbar = () => {
+const Navbar = ({ showDashboard, setShowDashboard }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const navigate = useNavigate();
@@ -12,6 +12,9 @@ const Navbar = () => {
 
   // Add ref for the profile dropdown container
   const profileRef = useRef(null);
+
+  // Add this to check if we're in an interface page
+  const isInterfacePage = location.pathname.startsWith("/right-draw/");
 
   // Add effect to handle clicks outside
   useEffect(() => {
@@ -44,6 +47,15 @@ const Navbar = () => {
     return location.pathname === path;
   };
 
+  // Add this function to handle dashboard toggle
+  const handleDashboardToggle = () => {
+    console.log("Current showDashboard:", showDashboard);
+    setShowDashboard((prev) => {
+      console.log("Toggling to:", !prev);
+      return !prev;
+    });
+  };
+
   return (
     <nav className="backdrop-blur-md w-full z-50 text-neutral-50 fixed top-0">
       <div className="bg-neutral-900/90 border-b border-neutral-800 shadow-[0_4px_20px_-1px_rgba(0,0,0,0.3)] mx-auto px-4 py-2 sm:px-6 lg:px-8">
@@ -60,6 +72,31 @@ const Navbar = () => {
               </Link>
             </div>
           </div>
+
+          {/* Enhanced Dashboard Toggle Button */}
+          {isInterfacePage && (
+            <div className="hidden sm:flex sm:items-center sm:ml-6">
+              <button
+                onClick={() => setShowDashboard((prev) => !prev)}
+                className="px-4 py-1.5 text-sm font-medium rounded-md
+                  text-neutral-100 bg-neutral-700 hover:bg-neutral-600
+                  transition-all duration-200 focus:outline-none 
+                  border border-neutral-500 shadow-lg hover:shadow-xl
+                  flex items-center space-x-2 hover:-translate-y-0.5
+                  active:translate-y-0 active:shadow-md"
+                aria-label={showDashboard ? "Hide Dashboard" : "Show Dashboard"}
+              >
+                {showDashboard ? (
+                  <EyeOff className="w-4 h-4 mr-2" />
+                ) : (
+                  <Eye className="w-4 h-4 mr-2" />
+                )}
+                <span>
+                  {showDashboard ? "Hide Dashboard" : "Show Dashboard"}
+                </span>
+              </button>
+            </div>
+          )}
 
           {/* User Profile Dropdown */}
           <div className="hidden sm:ml-4 sm:flex sm:items-center">

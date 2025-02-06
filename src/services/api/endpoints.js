@@ -538,3 +538,17 @@ export const templateAPI = {
     }
   },
 };
+
+// Templates API
+export const templatesAPI = {
+  getUserTemplates: async () => {
+    try {
+      const response = await axiosInstance.get("/right-draw/user-templates/");
+      return response.data;
+    } catch (error) {
+      const errorMessage =
+        error.response?.data?.message || "Failed to fetch user templates.";
+      throw new Error(errorMessage);
+    }
+  },
+};

@@ -1,13 +1,16 @@
 import React from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useOutletContext } from "react-router-dom";
+import TemplatesDashboard from "../components/dashboard/TemplatesDashboard";
 import VerifierInterface from "./rightdraw-interfaces/VerifierInterface";
 import DesignerInterface from "./rightdraw-interfaces/DesignerInterface";
 import ApproverInterface from "./rightdraw-interfaces/ApproverInterface";
 import AdminInterface from "./rightdraw-interfaces/AdminInterface";
+import LoadingSpinner from "../components/common/LoadingSpinner";
 
 const RightDrawWrapper = () => {
   const navigate = useNavigate();
-  const { role } = useParams(); // Get the role from URL params
+  const { role } = useParams();
+  const { showDashboard } = useOutletContext();
   const userString = localStorage.getItem("user");
   const user = userString ? JSON.parse(userString) : null;
 
@@ -26,24 +29,35 @@ const RightDrawWrapper = () => {
   // Check if the requested role is one of the user's assigned roles
   if (!user.role.includes(role)) {
     console.error("User does not have access to this role interface");
-    navigate("/"); // Redirect to home if role is not authorized
+    navigate("/");
     return null;
   }
 
-  // Render interface based on URL role parameter
-  switch (role) {
-    case "CADesigner":
-      return <DesignerInterface />;
-    case "Verifier":
-      return <VerifierInterface />;
-    case "Approver":
-      return <ApproverInterface />;
-    case "Admin":
-      return <AdminInterface />;
-    default:
-      navigate("/"); // Redirect to home if role is invalid
-      return null;
-  }
+  const renderInterface = () => {
+    if (showDashboard) {
+      return <TemplatesDashboard />;
+    }
+
+    switch (role) {
+      case "CADesigner":
+        return <DesignerInterface />;
+      case "Verifier":
+        return <VerifierInterface />;
+      case "Approver":
+        return <ApproverInterface />;
+      case "Admin":
+        return <AdminInterface />;
+      default:
+        navigate("/");
+        return null;
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-neutral-900">
+      <div className="p-6 mt-8">{renderInterface()}</div>
+    </div>
+  );
 };
 
 export default RightDrawWrapper;

@@ -26,6 +26,7 @@ import PageLayout from "../../components/layout/PageLayout";
 import generatePDF from "../pdf-creators/PDFDocumentVerifierInterface";
 import { useNavigate } from "react-router-dom";
 import { BASIC_DETAILS_LENGTH } from "../../constants";
+import LoadingSpinner from "../../components/common/LoadingSpinner";
 
 const STEPS = {
   BASIC_INFO: "basicInfo",
@@ -195,6 +196,8 @@ const VerifierInterface = () => {
       await verifierAPI.createVerifierTemplate(submitData);
       const results = await verifierAPI.getVerifyResults(submitData);
       setApiData((prev) => ({ ...prev, verifyResults: results.res }));
+      generatePDF(formData, apiData.verifyResults, apiData.specifications);
+
       setCurrentStep((prev) => prev + 1);
       setSubmitted(true);
       toast.success("Successfully submitted the details!");
@@ -659,9 +662,8 @@ const VerifierInterface = () => {
                     <span>Checking...</span>
                   </div>
                 ) : loading.submission ? (
-                  <div className="flex items-center gap-2">
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
-                    <span>Submitting...</span>
+                  <div className="flex items-center justify-center">
+                    <LoadingSpinner size="sm" />
                   </div>
                 ) : currentStep === STEP_ORDER.length - 2 ? (
                   "Submit"

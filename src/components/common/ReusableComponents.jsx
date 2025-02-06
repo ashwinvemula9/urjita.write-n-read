@@ -53,6 +53,47 @@ const Input = ({
   );
 };
 
+const Table = ({ columns, data, onRowClick }) => {
+  return (
+    <div className="overflow-x-auto">
+      <table className="min-w-full bg-neutral-700 rounded-lg">
+        <thead>
+          <tr className="border-b border-neutral-600">
+            {columns.map((column) => (
+              <th
+                key={column.key}
+                className="px-6 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider"
+              >
+                {column.header}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-neutral-600">
+          {data.map((row, index) => (
+            <tr
+              key={index}
+              className="hover:bg-neutral-600 cursor-pointer transition-colors"
+              onClick={() => onRowClick && onRowClick(row)}
+            >
+              {columns.map((column) => (
+                <td
+                  key={column.key}
+                  className="px-6 py-4 text-sm text-neutral-300"
+                >
+                  {row[column.key]}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+};
+
+export default Table;
+
 // Select Component
 
 const Select = ({
@@ -323,5 +364,71 @@ const TextArea = ({
     </div>
   );
 };
+const SearchBar = ({ value, onChange, placeholder }) => {
+  return (
+    <div className="relative">
+      <input
+        type="text"
+        className="w-full px-4 py-2 bg-neutral-700 border border-neutral-600 rounded-lg text-white placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        placeholder={placeholder}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+      />
+      <svg
+        className="absolute right-3 top-2.5 h-5 w-5 text-neutral-400"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+        />
+      </svg>
+    </div>
+  );
+};
+const Pagination = ({ currentPage, totalPages, onPageChange }) => {
+  return (
+    <div className="flex items-center justify-center gap-6 px-6 py-4 bg-neutral-800/50 rounded-lg">
+      <button
+        className="px-4 py-2 rounded-md bg-neutral-700 text-white 
+          disabled:opacity-50 disabled:cursor-not-allowed
+          hover:bg-neutral-600 transition-colors"
+        onClick={() => onPageChange(currentPage - 1)}
+        disabled={currentPage === 1}
+      >
+        Previous
+      </button>
 
-export { Input, Select, Checkbox, Button, Card, FormSection, TextArea };
+      <span className="text-neutral-300 font-medium">
+        Page {currentPage} of {totalPages}
+      </span>
+
+      <button
+        className="px-4 py-2 rounded-md bg-neutral-700 text-white 
+          disabled:opacity-50 disabled:cursor-not-allowed
+          hover:bg-neutral-600 transition-colors"
+        onClick={() => onPageChange(currentPage + 1)}
+        disabled={currentPage === totalPages}
+      >
+        Next
+      </button>
+    </div>
+  );
+};
+
+export {
+  Input,
+  Pagination,
+  SearchBar,
+  Table,
+  Select,
+  Checkbox,
+  Button,
+  Card,
+  FormSection,
+  TextArea,
+};

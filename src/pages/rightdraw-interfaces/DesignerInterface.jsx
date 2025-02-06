@@ -24,6 +24,7 @@ import { cadAPI } from "../../services/api/endpoints";
 import { saveAs } from "file-saver";
 import { pdf } from "@react-pdf/renderer";
 import { templateAPI } from "../../services/api/endpoints";
+import LoadingSpinner from "../../components/common/LoadingSpinner";
 
 // Constants
 const STEPS = {
@@ -464,6 +465,12 @@ const DesignerInterface = () => {
 
       // Reset form on success
       setSubmitted(true);
+      generatePDF(
+        formData,
+        apiData.specifications,
+        apiData.designRules,
+        apiData.designOptions
+      );
       setIsDirty(false);
       localStorage.removeItem("designerFormData");
     } catch (err) {
@@ -925,9 +932,8 @@ const DesignerInterface = () => {
                       disabled={loadingStates.submission}
                     >
                       {loadingStates.submission ? (
-                        <div className="flex items-center gap-2">
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
-                          <span>Submitting...</span>
+                        <div className="flex items-center justify-center">
+                          <LoadingSpinner size="sm" />
                         </div>
                       ) : (
                         "Submit"
