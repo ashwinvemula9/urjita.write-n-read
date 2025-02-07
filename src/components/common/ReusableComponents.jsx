@@ -369,7 +369,7 @@ const SearchBar = ({ value, onChange, placeholder }) => {
     <div className="relative">
       <input
         type="text"
-        className="w-full px-4 py-2 bg-neutral-700 border border-neutral-600 rounded-lg text-white placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className="w-full px-4 py-2 bg-white border border-neutral-600 rounded-lg text-black placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
         placeholder={placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}

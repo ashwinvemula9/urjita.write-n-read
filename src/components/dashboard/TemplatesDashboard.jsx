@@ -2,11 +2,12 @@ import React, { useState, useEffect } from "react";
 import { templatesAPI } from "../../services/api/endpoints";
 import { SearchBar } from "../common/ReusableComponents";
 import { Pagination } from "../common/ReusableComponents";
+import LoadingSpinner from "../common/LoadingSpinner";
 
 const getTabStyle = (tabName, activeTab) => {
   const baseStyle = `px-4 py-2 rounded-md text-sm font-medium`;
   const activeStyle = `bg-neutral-700 text-white`;
-  const inactiveStyle = `text-neutral-400 hover:text-neutral-300 hover:bg-neutral-700/50`;
+  const inactiveStyle = `text-black hover:text-black hover:bg-neutral-700/50`;
 
   return `${baseStyle} ${
     activeTab === tabName ? activeStyle : inactiveStyle
@@ -79,15 +80,20 @@ const TemplatesDashboard = () => {
     templates.verifier_templates.length +
     templates.approver_templates.length;
 
-  if (loading) return <div className="text-white text-center">Loading...</div>;
+  if (loading)
+    return (
+      <div className="flex justify-center py-12">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+      </div>
+    );
   if (error) return <div className="text-red-500 text-center">{error}</div>;
 
   return (
-    <div className="flex flex-col h-[calc(100vh-7rem)] max-w-6xl mx-auto">
+    <div className="flex flex-col h-[calc(100vh-7rem)] max-w-6xl mx-auto mt-8 ">
       {/* Header Section */}
-      <div className="bg-neutral-800/50 rounded-t-xl p-6 border-b border-neutral-700">
+      <div className="bg-white rounded-t-xl p-6 border-b border-neutral-700">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-semibold text-white">Templates</h2>
+          <h2 className="text-xl font-semibold text-black">Templates</h2>
           <div className="w-72">
             <SearchBar
               value={searchTerm}
@@ -98,7 +104,7 @@ const TemplatesDashboard = () => {
         </div>
 
         {/* Tabs */}
-        <div className="flex space-x-3 bg-neutral-800/80 p-2 rounded-lg">
+        <div className="flex space-x-3 bg-white p-2 rounded-lg">
           <div
             className={getTabStyle("all", activeTab)}
             onClick={() => setActiveTab("all")}
@@ -127,7 +133,7 @@ const TemplatesDashboard = () => {
       </div>
 
       {/* Table Section - Scrollable */}
-      <div className="flex-1 overflow-hidden bg-neutral-800/50">
+      <div className="flex-1 overflow-hidden bg-white">
         <div
           className="overflow-x-auto overflow-y-auto h-full
             [&::-webkit-scrollbar]:w-2
@@ -135,7 +141,7 @@ const TemplatesDashboard = () => {
             [&::-webkit-scrollbar-thumb]:rounded-full
             [&::-webkit-scrollbar-thumb]:bg-neutral-600
             [&::-webkit-scrollbar-thumb]:hover:bg-neutral-500
-            [&::-webkit-scrollbar-track]:bg-neutral-800
+            [&::-webkit-scrollbar-track]:bg-white
             [&::-webkit-scrollbar-track]:rounded-full
             [&::-webkit-scrollbar-corner]:bg-transparent
             scrollbar-thin
@@ -144,38 +150,38 @@ const TemplatesDashboard = () => {
             scrollbar-track-neutral-800"
         >
           <table className="min-w-full divide-y divide-neutral-700">
-            <thead className="bg-neutral-800/90 sticky top-0 z-10">
+            <thead className="bg-white sticky top-0 z-10">
               <tr>
-                <th className="px-6 py-3 text-left text-sm font-medium text-neutral-300 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-sm font-medium text-black uppercase tracking-wider">
                   Type
                 </th>
-                <th className="px-6 py-3 text-left text-sm font-medium text-neutral-300 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-sm font-medium text-black uppercase tracking-wider">
                   OPP
                 </th>
-                <th className="px-6 py-3 text-left text-sm font-medium text-neutral-300 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-sm font-medium text-black uppercase tracking-wider">
                   OPU
                 </th>
-                <th className="px-6 py-3 text-left text-sm font-medium text-neutral-300 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-sm font-medium text-black uppercase tracking-wider">
                   EDU
                 </th>
-                <th className="px-6 py-3 text-left text-sm font-medium text-neutral-300 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-sm font-medium text-black uppercase tracking-wider">
                   Model
                 </th>
-                <th className="px-6 py-3 text-left text-sm font-medium text-neutral-300 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-sm font-medium text-black uppercase tracking-wider">
                   Part #
                 </th>
-                <th className="px-6 py-3 text-left text-sm font-medium text-neutral-300 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-sm font-medium text-black uppercase tracking-wider">
                   Rev
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-neutral-800/30 divide-y divide-neutral-700">
+            <tbody className="bg-white divide-y divide-neutral-700">
               {paginatedTemplates.map((template, index) => (
                 <tr
                   key={index}
                   className="hover:bg-neutral-700/50 transition-colors"
                 >
-                  <td className="px-6 py-3 text-sm text-neutral-300 whitespace-nowrap">
+                  <td className="px-6 py-3 text-sm text-black whitespace-nowrap">
                     {activeTab === "all"
                       ? templates.design_templates.includes(template)
                         ? "Designer"
@@ -184,22 +190,22 @@ const TemplatesDashboard = () => {
                         : "Approver"
                       : activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
                   </td>
-                  <td className="px-6 py-3 text-sm text-neutral-300 whitespace-nowrap">
+                  <td className="px-6 py-3 text-sm text-black whitespace-nowrap">
                     {template.oppNumber}
                   </td>
-                  <td className="px-6 py-3 text-sm text-neutral-300 whitespace-nowrap">
+                  <td className="px-6 py-3 text-sm text-black whitespace-nowrap">
                     {template.opuNumber}
                   </td>
-                  <td className="px-6 py-3 text-sm text-neutral-300 whitespace-nowrap">
+                  <td className="px-6 py-3 text-sm text-black whitespace-nowrap">
                     {template.eduNumber}
                   </td>
-                  <td className="px-6 py-3 text-sm text-neutral-300 whitespace-nowrap">
+                  <td className="px-6 py-3 text-sm text-black whitespace-nowrap">
                     {template.modelName}
                   </td>
-                  <td className="px-6 py-3 text-sm text-neutral-300 whitespace-nowrap">
+                  <td className="px-6 py-3 text-sm text-black whitespace-nowrap">
                     {template.partNumber}
                   </td>
-                  <td className="px-6 py-3 text-sm text-neutral-300 whitespace-nowrap">
+                  <td className="px-6 py-3 text-sm text-black whitespace-nowrap">
                     {template.revisionNumber}
                   </td>
                 </tr>
@@ -210,7 +216,7 @@ const TemplatesDashboard = () => {
       </div>
 
       {/* Footer Section with Pagination */}
-      <div className="bg-neutral-800/50 rounded-b-xl p-4 border-t border-neutral-700">
+      <div className="bg-white rounded-b-xl p-4 border-t border-neutral-700">
         {totalPages > 1 && (
           <div className="flex justify-center">
             <Pagination
