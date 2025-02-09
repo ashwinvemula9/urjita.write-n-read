@@ -11,8 +11,8 @@ import GlossyText from "../components/common/GlossyText";
 
 const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
-  const [email, setEmail] = useState("verifierashwin@gmail.com");
-  const [password, setPassword] = useState("verifierashwin");
+  const [email, setEmail] = useState("ashwin_design@design.com");
+  const [password, setPassword] = useState("ashwin_design");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
 

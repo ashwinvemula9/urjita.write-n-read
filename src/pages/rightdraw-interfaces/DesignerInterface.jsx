@@ -315,9 +315,9 @@ const DesignerInterface = () => {
     }
   }, []);
 
-  const fetchDesignOptions = async () => {
+  const fetchDesignOptions = async (id) => {
     try {
-      const response = await rulesAPI.getDesignOptions();
+      const response = await rulesAPI.getDesignOptions(id);
       setApiData((prev) => ({
         ...prev,
         designOptions: response,
@@ -357,8 +357,11 @@ const DesignerInterface = () => {
   // Effect Hooks
   useEffect(() => {
     fetchInitialData();
-    fetchDesignOptions();
   }, []);
+  console.log("fffff");
+  useEffect(() => {
+    fetchDesignOptions(formData[STEPS.PCB_SPECS].selectedSpecs[1]);
+  }, [formData[STEPS.PCB_SPECS].selectedSpecs[1]]);
 
   useEffect(() => {
     if (currentStep === 2) {

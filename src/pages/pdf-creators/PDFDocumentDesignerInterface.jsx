@@ -131,14 +131,14 @@ const styles = StyleSheet.create({
     color: "#374151",
   },
   comments: {
-    fontSize: 6,
+    fontSize: 7,
     color: "#64748b",
     fontStyle: "italic",
   },
   pageNumber: {
     position: "absolute",
     bottom: 10,
-    right: 20,
+    left: 20,
     fontSize: 8,
     color: "#94a3b8",
   },
@@ -182,6 +182,14 @@ const RuleComponent = ({ rule, isLast }) => (
   </View>
 );
 
+const getSpecNameWithMetrics = (specName) => {
+  if (specName === "Dielectric Thickness")
+    return "Dielectric Thickness (in inches)";
+  if (specName === "Copper Thickness") return "Copper Thickness(in oz)";
+  if (specName === "B14 Size") return "B14 Size (in inches)";
+  else return specName;
+};
+
 const PDFDocumentDesignerInterface = ({
   formData,
   specifications,
@@ -220,16 +228,28 @@ const PDFDocumentDesignerInterface = ({
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Basic Information</Text>
             <View style={styles.infoGrid}>
-              {Object.entries(formData.basicInfo).map(([key, value]) => (
-                <View key={key} style={styles.infoItem}>
-                  <View style={styles.infoRow}>
-                    <Text style={styles.label}>{key}:</Text>
-                    <Text style={styles.value}>
-                      {key.toLowerCase() === "component" ? "B14(PCB)" : value}
-                    </Text>
+              {Object.entries(formData.basicInfo)
+                .map((key, val) => {
+                  if (key === "oppNumber") return { "OPP Number": val };
+                  if (key === "eduNumber") return { "EDU Number": val };
+                  if (key === "partNumber") return { "PART Number": val };
+                  if (key === "revisionNumber")
+                    return { "REVISION Number": val };
+                  if (key === "component") return { COMPONENT: val };
+                  if (key === "opuNumber") return { "OPU Number": val };
+                  if (key === "modelName") return { "Model Name": val };
+                  if (key === "designDoc") return { "Design Document": val };
+                })
+                .map(([key, value]) => (
+                  <View key={key} style={styles.infoItem}>
+                    <View style={styles.infoRow}>
+                      <Text style={styles.label}>{key}:</Text>
+                      <Text style={styles.value}>
+                        {key.toLowerCase() === "component" ? "B14(PCB)" : value}
+                      </Text>
+                    </View>
                   </View>
-                </View>
-              ))}
+                ))}
             </View>
           </View>
 
@@ -239,7 +259,9 @@ const PDFDocumentDesignerInterface = ({
               {specifications.map((spec) => (
                 <View key={spec.category_id} style={styles.infoItem}>
                   <View style={styles.infoRow}>
-                    <Text style={styles.label}>{spec.category_name}:</Text>
+                    <Text style={styles.label}>
+                      {getSpecNameWithMetrics(spec.category_name)}:
+                    </Text>
                     <Text style={styles.value}>
                       {findSpecificationName(
                         spec.category_id,
