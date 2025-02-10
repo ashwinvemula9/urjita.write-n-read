@@ -315,9 +315,9 @@ const DesignerInterface = () => {
     }
   }, []);
 
-  const fetchDesignOptions = async () => {
+  const fetchDesignOptions = async (id) => {
     try {
-      const response = await rulesAPI.getDesignOptions();
+      const response = await rulesAPI.getDesignOptions(id);
       setApiData((prev) => ({
         ...prev,
         designOptions: response,
@@ -357,8 +357,12 @@ const DesignerInterface = () => {
   // Effect Hooks
   useEffect(() => {
     fetchInitialData();
-    fetchDesignOptions();
   }, []);
+
+  useEffect(() => {
+    if (formData[STEPS.PCB_SPECS].selectedSpecs[1])
+      fetchDesignOptions(formData[STEPS.PCB_SPECS].selectedSpecs[1]);
+  }, [formData[STEPS.PCB_SPECS].selectedSpecs[1]]);
 
   useEffect(() => {
     if (currentStep === 2) {
@@ -933,7 +937,8 @@ const DesignerInterface = () => {
                     >
                       {loadingStates.submission ? (
                         <div className="flex items-center justify-center">
-                          <LoadingSpinner size="sm" />
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
+                          <span>Submitting...</span>
                         </div>
                       ) : (
                         "Submit"

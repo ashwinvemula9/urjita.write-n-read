@@ -2,7 +2,7 @@ import axios from "axios";
 import { toast } from "react-toastify";
 
 // Configuration
-const BASE_URL = "http://127.0.0.1:8000";
+const BASE_URL = "http://173.248.136.190:80";
 
 // Create axios instance
 const axiosInstance = axios.create({
@@ -299,10 +299,10 @@ export const componentsAPI = {
   },
 };
 export const rulesAPI = {
-  getDesignOptions: async () => {
+  getDesignOptions: async (id) => {
     try {
       const response = await axiosInstance.get(
-        "right-draw/design-options/110/"
+        `right-draw/design-options/${id}/`
       );
       return response.data;
     } catch (err) {
