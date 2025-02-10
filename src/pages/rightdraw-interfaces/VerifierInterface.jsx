@@ -122,7 +122,8 @@ const VerifierInterface = () => {
 
   const fetchVerifierFields = async () => {
     const selectedSpec = formData[STEPS.PCB_SPECS].selectedSpecs[1];
-    if ([110, 111, 128].includes(Number(selectedSpec))) {
+
+    if ([112, 111, 119].includes(Number(selectedSpec))) {
       setLoading((prev) => ({ ...prev, verifierFields: true }));
       try {
         const fields = await verifierAPI.getVerifierFields(1, 1, selectedSpec);
@@ -216,9 +217,11 @@ const VerifierInterface = () => {
       const response = await templateAPI.checkTemplateExists(
         formData[STEPS.BASIC_INFO]
       );
-      if (response.verifier_exists) {
+      if (!response.designer_exists || response.verifier_exists) {
         setTemplateExists(true);
-        toast.error("A template with these details already exists!");
+        toast.error(
+          "A template with these details already exists! or Designer template not available!"
+        );
       } else {
         setCurrentStep((prev) => prev + 1);
       }
@@ -296,8 +299,8 @@ const VerifierInterface = () => {
             {templateExists && (
               <div className="col-span-2 mt-2">
                 <p className="text-red-500 text-sm">
-                  A template with these details already exists. Please modify
-                  the details
+                  A template with these details already exists or A design
+                  template not exists with these details.
                 </p>
               </div>
             )}

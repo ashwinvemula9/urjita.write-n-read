@@ -132,9 +132,11 @@ const ApproverInterface = () => {
     try {
       // First check if template exists
       const templateCheck = await templateAPI.checkTemplateExists(formData);
-      if (templateCheck.approver_exists) {
+      if (!response.verifier_exists || templateCheck.approver_exists) {
         setTemplateExists(true);
-        toast.error("A template with these details already exists!");
+        toast.error(
+          " A template with these details already exists or A verifier template not exists with these details."
+        );
         return;
       }
 
@@ -698,8 +700,8 @@ const ApproverInterface = () => {
           )}
           {templateExists && (
             <div className="mt-2 text-red-500 text-sm">
-              A template with these details already exists. Please modify the
-              details
+              A template with these details already exists or A verifier
+              template not exists with these details.
             </div>
           )}
         </div>
