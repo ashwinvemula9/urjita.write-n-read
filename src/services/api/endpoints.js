@@ -404,7 +404,7 @@ export const verifierAPI = {
       console.log("error here", error);
       const errorMessage =
         error.response?.data?.message ||
-        error.response?.data?.non_field_errors.reduce((eachMessage, acc) => {
+        error.response?.data?.non_field_errors?.reduce((eachMessage, acc) => {
           `${acc}  ${eachMessage}`;
         }) ||
         error.response?.data ||

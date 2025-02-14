@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import {
   ArrowDown,
   ArrowUp,
@@ -123,28 +123,29 @@ const VerifierInterface = () => {
   const fetchVerifierFields = async () => {
     const selectedSpec = formData[STEPS.PCB_SPECS].selectedSpecs[1];
 
-    if ([112, 111, 119].includes(Number(selectedSpec))) {
-      setLoading((prev) => ({ ...prev, verifierFields: true }));
-      try {
-        const fields = await verifierAPI.getVerifierFields(1, 1, selectedSpec);
-        setApiData((prev) => ({ ...prev, verifierFields: fields }));
-        setHasVerifierFields(true);
-      } catch (error) {
-        toast.error("Failed to fetch verifier fields");
-        setHasVerifierFields(false);
-      } finally {
-        setLoading((prev) => ({ ...prev, verifierFields: false }));
-      }
-    } else {
+    setLoading((prev) => ({ ...prev, verifierFields: true }));
+    try {
+      const fields = await verifierAPI.getVerifierFields(1, 1, selectedSpec);
+      setApiData((prev) => ({ ...prev, verifierFields: fields }));
+      setHasVerifierFields(true);
+    } catch (error) {
+      toast.error("Failed to fetch verifier fields");
       setHasVerifierFields(false);
+    } finally {
+      setLoading((prev) => ({ ...prev, verifierFields: false }));
     }
   };
 
+  const cat_b14_id = useMemo(
+    () => apiData.specifications.find((itr) => "Category for B14")?.category_id,
+    [apiData]
+  );
+
   useEffect(() => {
-    if (formData[STEPS.PCB_SPECS].selectedSpecs[1]) {
+    if (formData[STEPS.PCB_SPECS].selectedSpecs[cat_b14_id]) {
       fetchVerifierFields();
     }
-  }, [formData[STEPS.PCB_SPECS].selectedSpecs[1]]);
+  }, [formData[STEPS.PCB_SPECS].selectedSpecs?.[cat_b14_id]]);
 
   const handleFieldChange = (step, field, value) => {
     setFormData((prev) => ({
@@ -656,7 +657,22 @@ const VerifierInterface = () => {
                 disabled={
                   loading.submission ||
                   checkingTemplate ||
-                  (currentStep === 0 && templateExists)
+                  (currentStep === 0 &&
+                    7 !==
+                      Object.values(formData?.[STEPS.BASIC_INFO]).filter(
+                        (itr) => itr
+                      ).length) ||
+                  templateExists ||
+                  (currentStep === 1 &&
+                    apiData.specifications?.length !==
+                      Object.values(
+                        formData?.[STEPS.PCB_SPECS]?.selectedSpecs
+                      ).filter((itr) => itr).length) ||
+                  (currentStep === 2 &&
+                    apiData.verifierFields.length !==
+                      Object.values(
+                        formData?.[STEPS.VERIFIER_FIELDS].verifierQueryData
+                      ).filter((itr) => itr).length)
                 }
               >
                 {checkingTemplate ? (
@@ -666,7 +682,7 @@ const VerifierInterface = () => {
                   </div>
                 ) : loading.submission ? (
                   <div className="flex items-center justify-center">
-                    <LoadingSpinner size="sm" />
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
                   </div>
                 ) : currentStep === STEP_ORDER.length - 2 ? (
                   "Submit"

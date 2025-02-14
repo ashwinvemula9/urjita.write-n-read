@@ -105,11 +105,15 @@ const getErrorMessage = (specs) => {
 };
 
 // Simplify the PCBSpecifications component
-const PCBSpecifications = ({ formData, apiData, handleFieldChange }) => {
+const PCBSpecifications = ({
+  formData,
+  apiData,
+  handleFieldChange,
+  setSubCategoriesTwoSelections,
+  subCategoriesTwoSelections,
+}) => {
   const [subCategoriesTwo, setSubCategoriesTwo] = useState({});
-  const [subCategoriesTwoSelections, setSubCategoriesTwoSelections] = useState(
-    {}
-  );
+
   const errorMessage = getErrorMessage(formData[STEPS.PCB_SPECS].selectedSpecs);
 
   // Function to fetch sub-categories-two
@@ -250,6 +254,9 @@ const DesignerInterface = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [formData, setFormData] = useState(initialFormState);
   const [isDirty, setIsDirty] = useState(false);
+  const [subCategoriesTwoSelections, setSubCategoriesTwoSelections] = useState(
+    {}
+  );
 
   // API Data State
   const [apiData, setApiData] = useState(initialApiDataState);
@@ -437,6 +444,7 @@ const DesignerInterface = () => {
       designOptions: Object.entries(formData.designRules.selectedCheckboxes)
         .filter(([_, isSelected]) => isSelected)
         .map(([id]) => id),
+      secondarySubLevel: subCategoriesTwoSelections,
     };
 
     try {
@@ -559,6 +567,8 @@ const DesignerInterface = () => {
         formData={formData}
         apiData={apiData}
         handleFieldChange={handleFieldChange}
+        setSubCategoriesTwoSelections={setSubCategoriesTwoSelections}
+        subCategoriesTwoSelections={subCategoriesTwoSelections}
       />
     ),
 

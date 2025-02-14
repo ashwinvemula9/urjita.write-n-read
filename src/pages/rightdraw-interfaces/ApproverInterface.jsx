@@ -132,10 +132,10 @@ const ApproverInterface = () => {
     try {
       // First check if template exists
       const templateCheck = await templateAPI.checkTemplateExists(formData);
-      if (!response.verifier_exists || templateCheck.approver_exists) {
+      if (!templateCheck.verifier_exists || templateCheck.approver_exists) {
         setTemplateExists(true);
         toast.error(
-          " A template with these details already exists or A verifier template not exists with these details."
+          "A template with these details already exists or A verifier template not exists with these details."
         );
         return;
       }
@@ -734,7 +734,7 @@ const ApproverInterface = () => {
             >
               {loading ? (
                 <div className="flex items-center justify-center">
-                  <LoadingSpinner size="sm" />
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
                 </div>
               ) : (
                 "Confirm Approval"
