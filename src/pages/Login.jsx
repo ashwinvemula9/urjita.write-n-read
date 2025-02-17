@@ -66,9 +66,14 @@ const LoginPage = () => {
       return;
     }
     try {
-      await authAPI.requestPasswordReset({ email, password });
+      await authAPI.requestPasswordReset({
+        email,
+        password: confirmPassword,
+        password2: newPassword,
+      });
 
       toast.success("Password reset successfully");
+      navigate("/login");
     } catch (error) {
       toast.error(error.message);
     } finally {
@@ -175,115 +180,101 @@ const LoginPage = () => {
 
   const renderForgotPasswordForm = () => (
     <div className="space-y-6">
-      {!resetEmailSent ? (
-        <form onSubmit={handleForgotPassword} className="space-y-6">
-          {/* Email Input */}
-          <div>
-            <label className="block text-sm font-medium text-neutral-700 mb-2">
-              Email
-            </label>
-            <div
-              className="flex items-center bg-neutral-50 rounded-xl border border-neutral-200 
+      <form onSubmit={handleForgotPassword} className="space-y-6">
+        {/* Email Input */}
+        <div>
+          <label className="block text-sm font-medium text-neutral-700 mb-2">
+            Email
+          </label>
+          <div
+            className="flex items-center bg-neutral-50 rounded-xl border border-neutral-200 
                            transition-all duration-300 ease-in-out group
                            hover:border-indigo-400 focus-within:border-indigo-500 
                            focus-within:ring-2 focus-within:ring-indigo-500/20"
-            >
-              <div className="flex items-center justify-center w-12">
-                <Mail className="h-5 w-5 text-neutral-400 group-hover:text-indigo-500 transition-colors" />
-              </div>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                placeholder="Enter your email"
-                className="block w-full bg-transparent py-3 px-2 text-neutral-900 
-                         placeholder:text-neutral-400 focus:outline-none sm:text-sm"
-                disabled={loading}
-              />
-            </div>
-          </div>
-
-          {/* New Password Input */}
-          <div>
-            <label className="block text-sm font-medium text-neutral-700 mb-2">
-              New Password
-            </label>
-            <div
-              className="flex items-center bg-neutral-50 rounded-xl border border-neutral-200 
-                           transition-all duration-300 ease-in-out group
-                           hover:border-indigo-400 focus-within:border-indigo-500 
-                           focus-within:ring-2 focus-within:ring-indigo-500/20"
-            >
-              <div className="flex items-center justify-center w-12">
-                <Lock className="h-5 w-5 text-neutral-400 group-hover:text-indigo-500 transition-colors" />
-              </div>
-              <input
-                type="password"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                required
-                placeholder="Enter new password"
-                className="block w-full bg-transparent py-3 px-2 text-neutral-900 
-                         placeholder:text-neutral-400 focus:outline-none sm:text-sm"
-                disabled={loading}
-              />
-            </div>
-          </div>
-
-          {/* Confirm Password Input */}
-          <div>
-            <label className="block text-sm font-medium text-neutral-700 mb-2">
-              Confirm Password
-            </label>
-            <div
-              className="flex items-center bg-neutral-50 rounded-xl border border-neutral-200 
-                           transition-all duration-300 ease-in-out group
-                           hover:border-indigo-400 focus-within:border-indigo-500 
-                           focus-within:ring-2 focus-within:ring-indigo-500/20"
-            >
-              <div className="flex items-center justify-center w-12">
-                <Lock className="h-5 w-5 text-neutral-400 group-hover:text-indigo-500 transition-colors" />
-              </div>
-              <input
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                required
-                placeholder="Confirm new password"
-                className="block w-full bg-transparent py-3 px-2 text-neutral-900 
-                         placeholder:text-neutral-400 focus:outline-none sm:text-sm"
-                disabled={loading}
-              />
-            </div>
-          </div>
-
-          <Button
-            type="submit"
-            variant="primary"
-            className="w-full h-12 rounded-xl transform transition-all duration-300 ease-out
-                    hover:scale-[1.02] hover:shadow-lg active:scale-[0.98]"
-            disabled={loading}
           >
-            <span className="flex items-center justify-center space-x-2">
-              <span>{loading ? "Resetting..." : "Reset Password"}</span>
-              {!loading && <ArrowRight className="w-5 h-5" />}
-            </span>
-          </Button>
-        </form>
-      ) : (
-        <div className="text-center space-y-4">
-          <div className="w-16 h-16 bg-indigo-600 rounded-full mx-auto flex items-center justify-center">
-            <Mail className="w-8 h-8 text-white" />
+            <div className="flex items-center justify-center w-12">
+              <Mail className="h-5 w-5 text-neutral-400 group-hover:text-indigo-500 transition-colors" />
+            </div>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              placeholder="Enter your email"
+              className="block w-full bg-transparent py-3 px-2 text-neutral-900 
+                         placeholder:text-neutral-400 focus:outline-none sm:text-sm"
+              disabled={loading}
+            />
           </div>
-          <h3 className="text-xl font-semibold text-neutral-900">
-            Check Your Email
-          </h3>
-          <p className="text-neutral-600">
-            We've sent password reset instructions to {email}
-          </p>
         </div>
-      )}
+
+        {/* New Password Input */}
+        <div>
+          <label className="block text-sm font-medium text-neutral-700 mb-2">
+            New Password
+          </label>
+          <div
+            className="flex items-center bg-neutral-50 rounded-xl border border-neutral-200 
+                           transition-all duration-300 ease-in-out group
+                           hover:border-indigo-400 focus-within:border-indigo-500 
+                           focus-within:ring-2 focus-within:ring-indigo-500/20"
+          >
+            <div className="flex items-center justify-center w-12">
+              <Lock className="h-5 w-5 text-neutral-400 group-hover:text-indigo-500 transition-colors" />
+            </div>
+            <input
+              type="password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              required
+              placeholder="Enter new password"
+              className="block w-full bg-transparent py-3 px-2 text-neutral-900 
+                         placeholder:text-neutral-400 focus:outline-none sm:text-sm"
+              disabled={loading}
+            />
+          </div>
+        </div>
+
+        {/* Confirm Password Input */}
+        <div>
+          <label className="block text-sm font-medium text-neutral-700 mb-2">
+            Confirm Password
+          </label>
+          <div
+            className="flex items-center bg-neutral-50 rounded-xl border border-neutral-200 
+                           transition-all duration-300 ease-in-out group
+                           hover:border-indigo-400 focus-within:border-indigo-500 
+                           focus-within:ring-2 focus-within:ring-indigo-500/20"
+          >
+            <div className="flex items-center justify-center w-12">
+              <Lock className="h-5 w-5 text-neutral-400 group-hover:text-indigo-500 transition-colors" />
+            </div>
+            <input
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+              placeholder="Confirm new password"
+              className="block w-full bg-transparent py-3 px-2 text-neutral-900 
+                         placeholder:text-neutral-400 focus:outline-none sm:text-sm"
+              disabled={loading}
+            />
+          </div>
+        </div>
+
+        <Button
+          type="submit"
+          variant="primary"
+          className="w-full h-12 rounded-xl transform transition-all duration-300 ease-out
+                    hover:scale-[1.02] hover:shadow-lg active:scale-[0.98]"
+          disabled={loading}
+        >
+          <span className="flex items-center justify-center space-x-2">
+            <span>{loading ? "Resetting..." : "Reset Password"}</span>
+            {!loading && <ArrowRight className="w-5 h-5" />}
+          </span>
+        </Button>
+      </form>
 
       <button
         onClick={() => {

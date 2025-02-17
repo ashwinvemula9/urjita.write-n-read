@@ -198,7 +198,8 @@ const VerifierInterface = () => {
       await verifierAPI.createVerifierTemplate(submitData);
       const results = await verifierAPI.getVerifyResults(submitData);
       setApiData((prev) => ({ ...prev, verifyResults: results.res }));
-      generatePDF(formData, apiData.verifyResults, apiData.specifications);
+
+      generatePDF(formData, results.res, apiData.specifications);
 
       setCurrentStep((prev) => prev + 1);
       setSubmitted(true);

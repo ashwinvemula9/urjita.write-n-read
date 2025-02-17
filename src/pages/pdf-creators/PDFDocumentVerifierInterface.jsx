@@ -8,6 +8,7 @@ import {
   pdf,
 } from "@react-pdf/renderer";
 import { saveAs } from "file-saver";
+import { BASIC_KEY_LABEL } from "../../constants";
 
 // Add STEPS constant at the top
 const STEPS = {
@@ -63,6 +64,10 @@ const styles = StyleSheet.create({
     width: "50%",
     paddingRight: 10,
     marginBottom: 3,
+  },
+  infoRow: {
+    flexDirection: "row",
+    fontSize: 8,
   },
   resultItem: {
     marginBottom: 5,
@@ -159,9 +164,15 @@ const PDFDocumentVerifierInterface = ({
           <Text style={styles.sectionTitle}>Basic Information</Text>
           <View style={styles.infoGrid}>
             {Object.entries(formData[STEPS.BASIC_INFO]).map(([key, value]) => (
-              <View key={key} style={styles.infoItem}>
-                <Text style={styles.itemName}>{key}: </Text>
-                <Text style={styles.itemValue}>{value}</Text>
+              <View style={styles.infoRow}>
+                <View key={key} style={styles.infoItem}>
+                  <Text style={styles.itemName}>
+                    {BASIC_KEY_LABEL?.[key]}:{" "}
+                  </Text>
+                  <Text style={styles.itemValue}>
+                    {key.toLowerCase() === "component" ? "B14(PCB)" : value}
+                  </Text>
+                </View>
               </View>
             ))}
           </View>
@@ -248,6 +259,7 @@ const PDFDocumentVerifierInterface = ({
           render={({ pageNumber, totalPages }) =>
             `Page ${pageNumber} of ${totalPages}`
           }
+          fixed
         />
       </Page>
     </Document>

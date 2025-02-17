@@ -113,37 +113,16 @@ export const authAPI = {
   // {
   //   "email": "mahesh@gmail.com"
   // }
-  requestPasswordReset: async (email) => {
+  requestPasswordReset: async (payload) => {
     try {
-      const response = await axiosInstance.post("right-draw/reset-password/", {
-        email,
+      const response = await axiosInstance.post("auth/forgot-password/", {
+        ...payload,
       });
       return response.data;
     } catch (error) {
       const errorMessage =
         error.response?.data?.message ||
         "Password reset request failed. Please try again.";
-      throw new Error(errorMessage);
-    }
-  },
-
-  // Sample Request:
-  // {
-  //   "password": "mahesh@15410",
-  //   "token": "cj9wt2-b44c1ba96bbc3293ba17b59c7e2ae9c0",
-  //   "uidb64": "MQ"
-  // }
-  resetPassword: async (resetData) => {
-    try {
-      const response = await axiosInstance.post(
-        "/right-draw/reset-password/",
-        resetData
-      );
-      return response.data;
-    } catch (error) {
-      const errorMessage =
-        error.response?.data?.message ||
-        "Password reset failed. Please try again.";
       throw new Error(errorMessage);
     }
   },

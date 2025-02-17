@@ -8,6 +8,7 @@ import {
   pdf,
 } from "@react-pdf/renderer";
 import { saveAs } from "file-saver";
+import { BASIC_KEY_LABEL } from "../../constants";
 
 const styles = StyleSheet.create({
   page: {
@@ -108,30 +109,30 @@ const styles = StyleSheet.create({
     padding: 4,
   },
   ruleTitle: {
-    fontSize: 8,
+    fontSize: 11,
     color: "#1e40af",
     fontWeight: "bold",
   },
   ruleDoc: {
-    fontSize: 7,
+    fontSize: 10,
     color: "#64748b",
   },
   parameter: {
-    fontSize: 8,
+    fontSize: 10,
     color: "#0f172a",
     marginBottom: 2,
   },
   values: {
     flexDirection: "row",
     gap: 8,
-    marginBottom: 2,
+    padding: "10px 0",
   },
   valueItem: {
-    fontSize: 7,
+    fontSize: 9,
     color: "#374151",
   },
   comments: {
-    fontSize: 6,
+    fontSize: 9,
     color: "#64748b",
     fontStyle: "italic",
   },
@@ -139,7 +140,8 @@ const styles = StyleSheet.create({
     position: "absolute",
     bottom: 10,
     right: 20,
-    fontSize: 8,
+    fontSize: 10,
+    fontWeight: 700,
     color: "#94a3b8",
   },
   contentWrapper: {
@@ -223,7 +225,7 @@ const PDFDocumentDesignerInterface = ({
               {Object.entries(formData.basicInfo).map(([key, value]) => (
                 <View key={key} style={styles.infoItem}>
                   <View style={styles.infoRow}>
-                    <Text style={styles.label}>{key}:</Text>
+                    <Text style={styles.label}>{BASIC_KEY_LABEL?.[key]}:</Text>
                     <Text style={styles.value}>
                       {key.toLowerCase() === "component" ? "B14(PCB)" : value}
                     </Text>
@@ -290,6 +292,7 @@ const PDFDocumentDesignerInterface = ({
           render={({ pageNumber, totalPages }) =>
             `Page ${pageNumber} of ${totalPages}`
           }
+          fixed
         />
       </Page>
     </Document>

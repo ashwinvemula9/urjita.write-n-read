@@ -8,6 +8,7 @@ import {
   pdf,
 } from "@react-pdf/renderer";
 import { saveAs } from "file-saver";
+import { BASIC_KEY_LABEL } from "../../constants";
 
 const styles = StyleSheet.create({
   page: {
@@ -55,6 +56,10 @@ const styles = StyleSheet.create({
     width: "50%",
     paddingRight: 10,
     marginBottom: 3,
+  },
+  infoRow: {
+    flexDirection: "row",
+    fontSize: 8,
   },
   resultItem: {
     marginBottom: 5,
@@ -165,8 +170,12 @@ const PDFDocumentApproverInterface = ({
           <View style={styles.infoGrid}>
             {Object.entries(basicInfo).map(([key, value]) => (
               <View key={key} style={styles.infoItem}>
-                <Text style={styles.itemName}>{key}: </Text>
-                <Text style={styles.itemValue}>{value}</Text>
+                <View style={styles.infoRow}>
+                  <Text style={styles.itemName}>{BASIC_KEY_LABEL[key]}: </Text>
+                  <Text style={styles.itemValue}>
+                    {key.toLowerCase() === "component" ? "B14(PCB)" : value}
+                  </Text>
+                </View>
               </View>
             ))}
           </View>
@@ -302,6 +311,7 @@ const PDFDocumentApproverInterface = ({
           render={({ pageNumber, totalPages }) =>
             `Page ${pageNumber} of ${totalPages}`
           }
+          fixed
         />
       </Page>
     </Document>
